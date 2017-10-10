@@ -285,34 +285,7 @@ def removeExtraCol(outfile,hwid):
     f=open(outfile,"w")
     f.write(nf)
     f.close()
-def uniqeErr(numprob):
-    err=open("error.txt","r")
-    errs=err.read()
-    err.close()
-    nerrs=""
-    for p in range(1,numprob+1):
-        errs2=""
-        tag="pb"+str(p)
-        errs2=errs2+tag+"\n"
-        stag="<"+tag+">"
-        istag=len(stag)
-        etag="</"+tag+">"
-        ietag=len(etag)
-        i=errs.find(stag)
-        ii=errs.find(etag)
-        tem=[]
-        while i!=-1:
-            errlog=errs[i+istag+1:ii]
-            if errlog not in tem:
-                tem.append(errlog)
-                errs2=errs2+errlog
-            i=errs.find(stag,ii)
-            ii=errs.find(etag,i)
-        nerrs=nerrs+"\n"+errs2
-    err2=open("unique_errors.txt","w")
-    err2.write(nerrs)
-    err2.close()
-    
+
 # main function
 if 1 not in skipsections:
     clist=readfolder(PATH1) # list of py files in the directory
@@ -357,5 +330,3 @@ if 7 not in skipsections:
     if not inTimeWrite:
         writeclass(clist,glist,HWID7,NUMPROB,INFILE7,OUTFILE7)
     removeExtraCol(OUTFILE7,HWID7)
-
-uniqeErr(NUMPROB)
