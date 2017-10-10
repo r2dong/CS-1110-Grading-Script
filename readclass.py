@@ -102,24 +102,22 @@ def readfolder(path):
 # a variable named "glist"
 def runtester(pyFileList, hwid, infile, outfile, path):
     
-    csvIcon = open(infile, "r") # open original ICON csv file read-only
-    # create new csv file to record grades, this file is not the one uploaded to
-    # ICON at the end, looks like is only for double checking grades
-    # csvNew = open(hwid + ".csv", "w") 
-    pyfi = ""
-    
-    # extract line with all headers from ICON csv
+    # find column number of the homework ID in the ICON csv
+    csvIcon = open(infile, "r")
     for line in csvIcon: # type of line is string
         header = line.replace("\n","")
         break
+    colHwid = findColumn(header, hwid)
+    colHwid = colHwid - 2
     csvIcon.close()
     
-    colHwid = findColumn(header, hwid) # column number in header of hwid
-    colHwid = colHwid - 2
-    
+    # this should be some sort of error recording file
+    # we need to reopen since we still need the header line, using the same file
+    # causes a syntax error when loading as well.
     csvIcon=open(infile,"r")
     pyfi=csvIcon.read()
     csvIcon.close()
+    
     #creates empty glist for grades it will be a list of lists the first internal list will be the list of hawkid(s), the rest of the internal lists will be the points for each problem. 1 for correct function, 0 for incorrect function and the string "0" if an error is raised in calling it.
     glist=[]
     #loop that goes through pyFileList
