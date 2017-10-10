@@ -1,0 +1,1 @@
+1. readclass breaks if file extension is ".PY" instead of ".py"
