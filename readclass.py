@@ -4,6 +4,7 @@
 import os
 import re
 import tester
+import sys
 
 #**********************************************************************************************************************************
 #These are to be changed as needed
@@ -121,38 +122,38 @@ def runtester(pyFileList, hwid, infile, outfile, path):
     # internal list will be the list of hawkid(s), the rest of the internal 
     # lists will be the points for each problem. 1 for correct function, 0 for 
     # incorrect function and the string "0" if an error is raised in calling it.
-    gradesList=[]
+    gradesList = []
     #loop that goes through pyFileList
-    for i in range(0,len(pyFileList)):
-        #trys to run the tester. if tester.py fails to load the grade element apended to the grade list will be -1
-        print("starting: "+pyFileList[i][:pyFileList[i].rfind(".py")])
+    for fileIndex in range(0, len(pyFileList)):
+        # try running tests. 
+        currentPyFile = pyFileList[fileIndex][:pyFileList[fileIndex].rfind(".py")]
+        print("starting: " + currentPyFile)  
         try:
-            #cuts off the .py from each name and passes it into teste the results of which are appended to gradesList
-            gradesList.append(tester.teste(pyFileList[i][:pyFileList[i].rfind(".py")], path))
-        except:
-            # if student's file fail to load (syntax errors)
-            gradesList.append(-1)
+            grade = tester.teste(currentPyFile, path)
+        except: # invalid getHawkIDs function errors will be caught here  
+            grade = -1
+        gradesList.append(grade)
         
-        if gradesList[i]!=-1:
+        if gradesList[fileIndex]!=-1:
             sum=0
-            for ele in gradesList[i]:
+            for ele in gradesList[fileIndex]:
                 if type(ele)!=list:
                     try:
                         sum+=int(ele)
                     except:
                         pass
-            if type(gradesList[i][0])==list or gradesList[i][0]==tuple:
-                for elele in gradesList[i][0]:
+            if type(gradesList[fileIndex][0])==list or gradesList[fileIndex][0]==tuple:
+                for elele in gradesList[fileIndex][0]:
                     pyfi=insertScore(pyfi,elele.lower(),colHwid,sum)
                     csvIcon=open(outfile,"w")
                     csvIcon.write(pyfi)
                     csvIcon.close()
         try:    
-            f=open(path+"/"+pyFileList[i],"r")
+            f=open(path+"/"+pyFileList[fileIndex],"r")
             pyf=f.read()
             f.close()
-            f=open(path+"/"+pyFileList[i],"w")
-            f.write("#$$##Grades:"+str(gradesList[i])+"\n"+pyf)
+            f=open(path+"/"+pyFileList[fileIndex],"w")
+            f.write("#$$##Grades:"+str(gradesList[fileIndex])+"\n"+pyf)
             f.close()
         except:
             pass
