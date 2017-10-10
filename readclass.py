@@ -50,8 +50,6 @@ OUTFILE5="C:/Users/Rentian Dong/Desktop/CS 1110/Week 2/AutoGrading/submissions/5
 OUTFILE6="C:/Users/Rentian Dong/Desktop/CS 1110/Improving Grading Script/6/newGrades6.csv"
 OUTFILE7="C:/Users/Rentian Dong/Desktop/CS 1110/Improving Grading Script/7/newGrades7.csv"
 
-# true if you want write grade after each file check
-inTimeWrite=True
 #**********************************************************************************************************************************
 
 #reads in the list of file/folders in path then uses that to make a list of .py files 
@@ -134,21 +132,21 @@ def runtester(pyFileList, hwid, infile, outfile, path):
         except:
             # if student's file fail to load (syntax errors)
             glist.append(-1)
-        if inTimeWrite:
-            if glist[i]!=-1:
-                sum=0
-                for ele in glist[i]:
-                    if type(ele)!=list:
-                        try:
-                            sum+=int(ele)
-                        except:
-                            pass
-                if type(glist[i][0])==list or glist[i][0]==tuple:
-                    for elele in glist[i][0]:
-                        pyfi=insertScore(pyfi,elele.lower(),colHwid,sum)
-                        csvIcon=open(outfile,"w")
-                        csvIcon.write(pyfi)
-                        csvIcon.close()
+        
+        if glist[i]!=-1:
+            sum=0
+            for ele in glist[i]:
+                if type(ele)!=list:
+                    try:
+                        sum+=int(ele)
+                    except:
+                        pass
+            if type(glist[i][0])==list or glist[i][0]==tuple:
+                for elele in glist[i][0]:
+                    pyfi=insertScore(pyfi,elele.lower(),colHwid,sum)
+                    csvIcon=open(outfile,"w")
+                    csvIcon.write(pyfi)
+                    csvIcon.close()
         try:    
             f=open(path+"/"+pyFileList[i],"r")
             pyf=f.read()
@@ -290,43 +288,29 @@ def removeExtraCol(outfile,hwid):
 if 1 not in skipsections:
     clist=readfolder(PATH1) # list of py files in the directory
     glist=runtester(clist,HWID1,INFILE1,OUTFILE1,PATH1)
-    if not inTimeWrite:
-        writeclass(clist,glist,HWID1,INFILE1,OUTFILE1)
     removeExtraCol(OUTFILE1,HWID1)
 if 2 not in skipsections:
     clist=readfolder(PATH2)
     glist=runtester(clist,HWID2,INFILE2,OUTFILE2,PATH2)
-    if not inTimeWrite:
-        writeclass(clist,glist,HWID2,NUMPROB,INFILE2,OUTFILE2)
     removeExtraCol(OUTFILE2,HWID2)
 if 3 not in skipsections:
     clist=readfolder(PATH3)
     glist=runtester(clist,HWID3,INFILE3,OUTFILE3,PATH3)
-    if not inTimeWrite:
-        writeclass(clist,glist,HWID3,NUMPROB,INFILE3,OUTFILE3)
     removeExtraCol(OUTFILE3,HWID3)
 if 4 not in skipsections:
     clist=readfolder(PATH4)
     print(clist)
     glist=runtester(clist,HWID4,INFILE4,OUTFILE4,PATH4)
-    if not inTimeWrite:
-        writeclass(clist,glist,HWID4,NUMPROB,INFILE4,OUTFILE4)
     removeExtraCol(OUTFILE4,HWID4)
 if 5 not in skipsections:
     clist=readfolder(PATH5)
     glist=runtester(clist,HWID5,INFILE5,OUTFILE5,PATH5)
-    if not inTimeWrite:
-        writeclass(clist,glist,HWID5,NUMPROB,INFILE5,OUTFILE5)
     removeExtraCol(OUTFILE5,HWID5)
 if 6 not in skipsections:
     clist=readfolder(PATH6)
     glist=runtester(clist,HWID6,INFILE6,OUTFILE6,PATH6)
-    if not inTimeWrite:
-        writeclass(clist,glist,HWID6,NUMPROB,INFILE6,OUTFILE6)
     removeExtraCol(OUTFILE6,HWID6)
 if 7 not in skipsections:
     clist=readfolder(PATH7)
     glist=runtester(clist,HWID7,INFILE7,OUTFILE7,PATH7)
-    if not inTimeWrite:
-        writeclass(clist,glist,HWID7,NUMPROB,INFILE7,OUTFILE7)
     removeExtraCol(OUTFILE7,HWID7)
