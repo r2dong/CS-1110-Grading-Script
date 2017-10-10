@@ -95,11 +95,10 @@ def readfolder(path):
 # hwid - header of column grades should be written to from ICON exported .csv
 # infile - path to icon exported csv
 # outfile - path to .csv file to write new grades to
-# path - path to folder with all python files to be graded
-# err - 
+# path - path to folder with all python files to be graded 
 # 
 # Output:
-# a variable named "glist"
+# a variable named "gradesList"
 def runtester(pyFileList, hwid, infile, outfile, path):
     
     # find column number of the homework ID in the ICON csv
@@ -118,29 +117,32 @@ def runtester(pyFileList, hwid, infile, outfile, path):
     pyfi=csvIcon.read()
     csvIcon.close()
     
-    #creates empty glist for grades it will be a list of lists the first internal list will be the list of hawkid(s), the rest of the internal lists will be the points for each problem. 1 for correct function, 0 for incorrect function and the string "0" if an error is raised in calling it.
-    glist=[]
+    # gradesList is a list of grades it will be a list of lists the first 
+    # internal list will be the list of hawkid(s), the rest of the internal 
+    # lists will be the points for each problem. 1 for correct function, 0 for 
+    # incorrect function and the string "0" if an error is raised in calling it.
+    gradesList=[]
     #loop that goes through pyFileList
     for i in range(0,len(pyFileList)):
         #trys to run the tester. if tester.py fails to load the grade element apended to the grade list will be -1
         print("starting: "+pyFileList[i][:pyFileList[i].rfind(".py")])
         try:
-            #cuts off the .py from each name and passes it into teste the results of which are appended to glist
-            glist.append(tester.teste(pyFileList[i][:pyFileList[i].rfind(".py")], path))
+            #cuts off the .py from each name and passes it into teste the results of which are appended to gradesList
+            gradesList.append(tester.teste(pyFileList[i][:pyFileList[i].rfind(".py")], path))
         except:
             # if student's file fail to load (syntax errors)
-            glist.append(-1)
+            gradesList.append(-1)
         
-        if glist[i]!=-1:
+        if gradesList[i]!=-1:
             sum=0
-            for ele in glist[i]:
+            for ele in gradesList[i]:
                 if type(ele)!=list:
                     try:
                         sum+=int(ele)
                     except:
                         pass
-            if type(glist[i][0])==list or glist[i][0]==tuple:
-                for elele in glist[i][0]:
+            if type(gradesList[i][0])==list or gradesList[i][0]==tuple:
+                for elele in gradesList[i][0]:
                     pyfi=insertScore(pyfi,elele.lower(),colHwid,sum)
                     csvIcon=open(outfile,"w")
                     csvIcon.write(pyfi)
@@ -150,12 +152,12 @@ def runtester(pyFileList, hwid, infile, outfile, path):
             pyf=f.read()
             f.close()
             f=open(path+"/"+pyFileList[i],"w")
-            f.write("#$$##Grades:"+str(glist[i])+"\n"+pyf)
+            f.write("#$$##Grades:"+str(gradesList[i])+"\n"+pyf)
             f.close()
         except:
             pass
-    print(glist)
-    return glist
+    print(gradesList)
+    return gradesList
 
 # find and return the column number of a sepcific header, among a row of
 # headers delimited by commas
@@ -212,7 +214,7 @@ def insertScore(Stng,Identifier,numcomma,score):
         return Stng[:ind]+str(score)+Stng[ind2:]
     
     
-def writeclass(clist,glist,hwid,infile,outfile):
+def writeclass(clist,gradesList,hwid,infile,outfile):
     f2=open(infile,"r")
     header=""
     for l in f2:
@@ -231,7 +233,7 @@ def writeclass(clist,glist,hwid,infile,outfile):
         f2.write(str(i)+",")
     f2.write("total\n")
     index=0
-    for ele in glist:
+    for ele in gradesList:
         f2.write(clist[index]+",")
         if ele!=-1:
             if type(ele[0])==list:
@@ -285,30 +287,30 @@ def removeExtraCol(outfile,hwid):
 # main function
 if 1 not in skipsections:
     clist=readfolder(PATH1) # list of py files in the directory
-    glist=runtester(clist,HWID1,INFILE1,OUTFILE1,PATH1)
+    gradesList=runtester(clist,HWID1,INFILE1,OUTFILE1,PATH1)
     removeExtraCol(OUTFILE1,HWID1)
 if 2 not in skipsections:
     clist=readfolder(PATH2)
-    glist=runtester(clist,HWID2,INFILE2,OUTFILE2,PATH2)
+    gradesList=runtester(clist,HWID2,INFILE2,OUTFILE2,PATH2)
     removeExtraCol(OUTFILE2,HWID2)
 if 3 not in skipsections:
     clist=readfolder(PATH3)
-    glist=runtester(clist,HWID3,INFILE3,OUTFILE3,PATH3)
+    gradesList=runtester(clist,HWID3,INFILE3,OUTFILE3,PATH3)
     removeExtraCol(OUTFILE3,HWID3)
 if 4 not in skipsections:
     clist=readfolder(PATH4)
     print(clist)
-    glist=runtester(clist,HWID4,INFILE4,OUTFILE4,PATH4)
+    gradesList=runtester(clist,HWID4,INFILE4,OUTFILE4,PATH4)
     removeExtraCol(OUTFILE4,HWID4)
 if 5 not in skipsections:
     clist=readfolder(PATH5)
-    glist=runtester(clist,HWID5,INFILE5,OUTFILE5,PATH5)
+    gradesList=runtester(clist,HWID5,INFILE5,OUTFILE5,PATH5)
     removeExtraCol(OUTFILE5,HWID5)
 if 6 not in skipsections:
     clist=readfolder(PATH6)
-    glist=runtester(clist,HWID6,INFILE6,OUTFILE6,PATH6)
+    gradesList=runtester(clist,HWID6,INFILE6,OUTFILE6,PATH6)
     removeExtraCol(OUTFILE6,HWID6)
 if 7 not in skipsections:
     clist=readfolder(PATH7)
-    glist=runtester(clist,HWID7,INFILE7,OUTFILE7,PATH7)
+    gradesList=runtester(clist,HWID7,INFILE7,OUTFILE7,PATH7)
     removeExtraCol(OUTFILE7,HWID7)
