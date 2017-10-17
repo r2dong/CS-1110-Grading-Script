@@ -136,13 +136,8 @@ def runtester(pyFileList, hwid, infile, outfile, path):
         
         # calculate total score if no exception with student's file
         if gradesList[index] != -1:
-            sum = 0
-            for ele in gradesList[index]:
-                if type(ele)!=list:
-                    try:
-                        sum+=int(ele)
-                    except:
-                        pass
+            total = sum(gradesList[index][1:])
+            
             if type(gradesList[index][0])==list or gradesList[index][0]==tuple:
                 for elele in gradesList[index][0]:
                     pyfi=insertScore(pyfi,elele.lower(),colHwid,sum)
