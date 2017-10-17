@@ -15,7 +15,7 @@ skipsections=[1, 2, 3, 4, 5]
 PATH1="C:/Users/Rentian Dong/Desktop/CS 1110/Week 2/AutoGrading/submissions/1/file"
 PATH2="C:/Users/Rentian Dong/Desktop/CS 1110/Week 2/AutoGrading/submissions/2/file"
 PATH3="C:/Users/Rentian Dong/Desktop/CS 1110/Week 2/AutoGrading/submissions/3/file"
-PATH4="C:/Users/Rentian Dong/Desktop/CS 1110/Week 2/AutoGrading/submissions/4/file"
+PATH4="C:/Users/Rentian Dong/Desktop/CS 1110/Improving Grading Script/4"
 PATH5="C:/Users/Rentian Dong/Desktop/CS 1110/Week 2/AutoGrading/submissions/5/file"
 PATH6="C:/Users/Rentian Dong/Desktop/CS 1110/Improving Grading Script/6"
 PATH7="C:/Users/Rentian Dong/Desktop/CS 1110/Improving Grading Script/7"
@@ -36,7 +36,7 @@ HWID7="DA 2 Final Submission (548738)"
 INFILE1="C:/Users/Rentian Dong/Desktop/CS 1110/Week 2/AutoGrading/submissions/1/05_Sep_20_20_Grades-CS_1110_0A01_Fall17.csv"
 INFILE2="C:/Users/Rentian Dong/Desktop/CS 1110/Week 2/AutoGrading/submissions/2/05_Sep_20_24_Grades-CS_1110_0A02_Fall17.csv"
 INFILE3="C:/Users/Rentian Dong/Desktop/CS 1110/Week 2/AutoGrading/submissions/3/05_Sep_20_26_Grades-CS_1110_0A03_Fall17.csv"
-INFILE4="C:/Users/Rentian Dong/Desktop/CS 1110/Week 2/AutoGrading/submissions/4/05_Sep_20_27_Grades-CS_1110_0A04_Fall17.csv"
+INFILE4="C:/Users/Rentian Dong/Desktop/CS 1110/Improving Grading Script/4/05_Sep_20_27_Grades-CS_1110_0A04_Fall17.csv"
 INFILE5="C:/Users/Rentian Dong/Desktop/CS 1110/Week 2/AutoGrading/submissions/5/05_Sep_20_28_Grades-CS_1110_0A05_Fall17.csv"
 INFILE6="C:/Users/Rentian Dong/Desktop/CS 1110/Improving Grading Script/6/05_Sep_20_29_Grades-CS_1110_0A06_Fall17.csv"
 INFILE7="C:/Users/Rentian Dong/Desktop/CS 1110/Improving Grading Script/7/05_Sep_20_31_Grades-CS_1110_0A07_Fall17.csv"
@@ -45,7 +45,7 @@ INFILE7="C:/Users/Rentian Dong/Desktop/CS 1110/Improving Grading Script/7/05_Sep
 OUTFILE1="C:/Users/Rentian Dong/Desktop/CS 1110/Week 2/AutoGrading/submissions/1/newGrades1.csv"
 OUTFILE2="C:/Users/Rentian Dong/Desktop/CS 1110/Week 2/AutoGrading/submissions/2/newGrades2.csv"
 OUTFILE3="C:/Users/Rentian Dong/Desktop/CS 1110/Week 2/AutoGrading/submissions/3/newGrades3.csv"
-OUTFILE4="C:/Users/Rentian Dong/Desktop/CS 1110/Week 2/AutoGrading/submissions/4/newGrades4.csv"
+OUTFILE4="C:/Users/Rentian Dong/Desktop/CS 1110/Improving Grading Script/4/newGrades4.csv"
 OUTFILE5="C:/Users/Rentian Dong/Desktop/CS 1110/Week 2/AutoGrading/submissions/5/newGrades5.csv"
 OUTFILE6="C:/Users/Rentian Dong/Desktop/CS 1110/Improving Grading Script/6/newGrades6.csv"
 OUTFILE7="C:/Users/Rentian Dong/Desktop/CS 1110/Improving Grading Script/7/newGrades7.csv"
@@ -134,13 +134,15 @@ def runtester(pyFileList, hwid, infile, outfile, path):
             testResult = -1
         gradesList.append(testResult)
         
-        # calculate total score if no exception with student's file
+        # calculate total score if no exception with student's file, write scores
+        # into csv files that will be re-uploaded to ICON
         if gradesList[index] != -1:
             total = sum(gradesList[index][1:])
-            hawkID = gradesList[index][0]
-            if type(hawkID) == list or type(hawkID) == tuple:
-                for elele in gradesList[index][0]:
-                    pyfi=insertScore(pyfi, elele.lower(), colHwid,total)
+            hawkIDs = gradesList[index][0]
+            if type(hawkIDs) == list or type(hawkIDs) == tuple:
+                # to deal with partners in paried sections
+                for hawkID in hawkIDs:
+                    pyfi = insertScore(pyfi, hawkID.lower(), colHwid,total)
                     csvUpload=open(outfile,"w") # csv to be imported back to ICON
                     csvUpload.write(pyfi)
                     csvUpload.close()
