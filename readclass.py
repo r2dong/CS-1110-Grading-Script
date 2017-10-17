@@ -61,19 +61,20 @@ def readfolder(path):
     try:
         fileList.remove("tester.py")
     except:
-        print("Unable to find test function")
+        print("did not remove tester from list of files")
     try:
         fileList.remove("readclass.py")
     except:
-        print("Unable to find readClass function")
+        print("did not remove readClass from list of files.py")
 
     # remove all none py file names from fileList
-    index = 0 # loop index
-    # contents of fileList modified during 
+    index = 0 # loop index 
     while index < len(fileList):
-        #finds index of last '.' if no '.' it will be 0 and will check against full string and fail. (unlesss it is a folder named "py".... don't name a folder "py" in this directory.)
+        # finds index of last '.' in file names. If no '.', it will be 0 and will
+        # check against the entire file name and fail. (unlesss it is a folder 
+        # named "py", so don't name a folder "py" in this directory.)
         try:
-            fileExtIndex = fileList[index].rfind(".") + 1 # index of "." for file extensions
+            fileExtIndex = fileList[index].rfind(".") + 1
         except:
             break
         #if it does not have a "py" as a the file extention remove from list
@@ -98,7 +99,7 @@ def readfolder(path):
 # path - path to folder with all python files to be graded 
 # 
 # Output:
-# a variable named "gradesList"
+# gradesList - a list of lists representing grades of each student
 def runtester(pyFileList, hwid, infile, outfile, path):
     
     # find column number of the homework ID in the ICON csv
@@ -117,42 +118,43 @@ def runtester(pyFileList, hwid, infile, outfile, path):
     pyfi=csvIcon.read()
     csvIcon.close()
     
-    # gradesList is a list of grades it will be a list of lists the first 
-    # internal list will be the list of hawkid(s), the rest of the internal 
-    # lists will be the points for each problem. 1 for correct function, 0 for 
-    # incorrect function and the string "0" if an error is raised in calling it.
+    # gradesList: first element of internal list will be the list of hawkid(s), 
+    # the rest of the internal lists will be the points for each problem. 1 for
+    # correct function, 0 for incorrect function and the string "0" if an error 
+    # is raised in calling it.
     gradesList=[]
-    #loop that goes through pyFileList
-    for i in range(0,len(pyFileList)):
-        #trys to run the tester. if tester.py fails to load the grade element apended to the grade list will be -1
-        print("starting: "+pyFileList[i][:pyFileList[i].rfind(".py")])
+    
+    #loop that goes through pyFileList and test each file
+    for index in range(0, len(pyFileList)):
+        fileName = pyFileList[index][:pyFileList[index].rfind(".py")]
+        print(fileName)
         try:
-            #cuts off the .py from each name and passes it into teste the results of which are appended to gradesList
-            gradesList.append(tester.teste(pyFileList[i][:pyFileList[i].rfind(".py")], path))
-        except:
-            # if student's file fail to load (syntax errors)
-            gradesList.append(-1)
+            testResult = tester.teste(fileName, path)
+        except: # if student's file fail to load (syntax errors)
+            testResult = -1
+        gradesList.append(testResult)
         
-        if gradesList[i]!=-1:
-            sum=0
-            for ele in gradesList[i]:
+        # calculate total score if no exception with student's file
+        if gradesList[index] != -1:
+            sum = 0
+            for ele in gradesList[index]:
                 if type(ele)!=list:
                     try:
                         sum+=int(ele)
                     except:
                         pass
-            if type(gradesList[i][0])==list or gradesList[i][0]==tuple:
-                for elele in gradesList[i][0]:
+            if type(gradesList[index][0])==list or gradesList[index][0]==tuple:
+                for elele in gradesList[index][0]:
                     pyfi=insertScore(pyfi,elele.lower(),colHwid,sum)
                     csvIcon=open(outfile,"w")
                     csvIcon.write(pyfi)
                     csvIcon.close()
         try:    
-            f=open(path+"/"+pyFileList[i],"r")
+            f=open(path+"/"+pyFileList[index],"r")
             pyf=f.read()
             f.close()
-            f=open(path+"/"+pyFileList[i],"w")
-            f.write("#$$##Grades:"+str(gradesList[i])+"\n"+pyf)
+            f=open(path+"/"+pyFileList[index],"w")
+            f.write("#$$##Grades:"+str(gradesList[index])+"\n"+pyf)
             f.close()
         except:
             pass
