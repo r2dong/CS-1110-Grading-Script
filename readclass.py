@@ -137,13 +137,13 @@ def runtester(pyFileList, hwid, infile, outfile, path):
         # calculate total score if no exception with student's file
         if gradesList[index] != -1:
             total = sum(gradesList[index][1:])
-            
-            if type(gradesList[index][0])==list or gradesList[index][0]==tuple:
+            hawkID = gradesList[index][0]
+            if type(hawkID) == list or type(hawkID) == tuple:
                 for elele in gradesList[index][0]:
-                    pyfi=insertScore(pyfi,elele.lower(),colHwid,sum)
-                    csvIcon=open(outfile,"w")
-                    csvIcon.write(pyfi)
-                    csvIcon.close()
+                    pyfi=insertScore(pyfi, elele.lower(), colHwid,total)
+                    csvUpload=open(outfile,"w") # csv to be imported back to ICON
+                    csvUpload.write(pyfi)
+                    csvUpload.close()
         try:    
             f=open(path+"/"+pyFileList[index],"r")
             pyf=f.read()
@@ -209,46 +209,6 @@ def insertScore(Stng,Identifier,numcomma,score):
         return Stng[:ind]+str(score)
     else:
         return Stng[:ind]+str(score)+Stng[ind2:]
-    
-    
-def writeclass(clist,gradesList,hwid,infile,outfile):
-    f2=open(infile,"r")
-    header=""
-    for l in f2:
-        header=l.replace("\n","")
-        break
-    f2.close()
-    colHwid=findColumn(header,hwid)
-    print(colHwid)
-    colHwid=colHwid-2
-    f2=open(infile,"r")
-    pyfi=f2.read()
-    f2.close()
-    f2=open(hwid+".csv","w")
-    f2.write("name,")
-    for i in range(1,NUMPROB+1):
-        f2.write(str(i)+",")
-    f2.write("total\n")
-    index=0
-    for ele in gradesList:
-        f2.write(clist[index]+",")
-        if ele!=-1:
-            if type(ele[0])==list:
-                sislist=ele.pop(0)
-            sum=0
-            for i in ele:
-                f2.write(str(i)+",")
-                sum=sum+int(i)
-            f2.write(str(sum))
-            if type(ele[0])==list:
-                for ele2 in sislist:
-                    pyfi=insertScore(pyfi,ele2.lower(),colHwid,sum)
-        f2.write("\n")
-        index+=1
-    f2.close()
-    f2=open(outfile,"w")
-    f2.write(pyfi)
-    f2.close()
 
 def removeExtraCol(outfile,hwid):
     f=open(outfile,"r")
