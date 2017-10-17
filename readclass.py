@@ -114,8 +114,8 @@ def runtester(pyFileList, hwid, infile, outfile, path):
     # this should be some sort of error recording file
     # we need to reopen since we still need the header line, using the same file
     # causes a syntax error when loading as well.
-    csvIcon=open(infile,"r")
-    pyfi=csvIcon.read()
+    csvIcon = open(infile, "r")
+    pyfi = csvIcon.read()
     csvIcon.close()
     
     # gradesList: first element of internal list will be the list of hawkid(s), 
