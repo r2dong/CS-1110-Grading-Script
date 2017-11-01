@@ -1,4 +1,5 @@
-###Willem DeJong###
+# This script was originally written by Willem Dejong. Rentian worked on
+# improving style of the code and making a few improvements to functionality.
 
 #to record name
 import os
