@@ -53,27 +53,23 @@ OUTFILE7="C:/Users/Rentian Dong/Desktop/CS 1110/Improving Grading Script/7/newGr
 
 #**********************************************************************************************************************************
 
-#reads in the list of file/folders in path then uses that to make a list of .py files 
+#reads in the list of file/folders in path and make a list of .py files 
 def readfolder(path):
     #creates a list of items in the directory of path
     fileList=os.listdir(path)
     
-    #removes testing .py codes from fileList
-    try:
+    #removes testing .py codes from fileList, if they are in it
+    if "tester.py" in fileList:
         fileList.remove("tester.py")
-    except:
-        print("did not remove tester from list of files")
-    try:
+    if "readclass.py" in fileList:
         fileList.remove("readclass.py")
-    except:
-        print("did not remove readClass from list of files.py")
 
     # remove all none py file names from fileList
     index = 0 # loop index 
     while index < len(fileList):
-        # finds index of last '.' in file names. If no '.', it will be 0 and will
-        # check against the entire file name and fail. (unlesss it is a folder 
-        # named "py", so don't name a folder "py" in this directory.)
+        # finds index of last '.' in file names. If no '.', it will be 0 and 
+        # will check against the entire file name and fail. (unlesss it is a
+        # folder named "py", so don't name a folder "py" in this directory.)
         try:
             fileExtIndex = fileList[index].rfind(".") + 1
         except:
@@ -91,7 +87,7 @@ def readfolder(path):
     return fileList
 
 
-#will need to modify later to account for possible infinite loops
+# TODO: will need to modify later to account for possible infinite loops
 # Inputs:
 # pyFileList - a list with python file names to be graded
 # hwid - header of column grades should be written to from ICON exported .csv
@@ -181,7 +177,7 @@ def findColumn(headerRow, header):
         colNum += 1
     return colNum + 1 # colNum returned will be at least 0
 
-def insertScore(Stng,Identifier,numcomma,score):
+def insertScore(Stng, Identifier, numcomma, score):
     if type(Identifier)!=str:
         return Stng
     try:
@@ -213,6 +209,8 @@ def insertScore(Stng,Identifier,numcomma,score):
     else:
         return Stng[:ind]+str(score)+Stng[ind2:]
 
+# removes extra columns from CSV to re-import to ICON, so that empty spaces do
+# not overwrite other grades
 def removeExtraCol(outfile,hwid):
     f=open(outfile,"r")
     nf=""
@@ -222,8 +220,6 @@ def removeExtraCol(outfile,hwid):
         if b:
             colHwid=findColumn(line,hwid)
             colHwid-=4
-            #print(colHwid)
-            #input()
             b=False
         ind=-1
         for i in range(0,4): # changed from 5 to 4 Aug 23 2017
