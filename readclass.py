@@ -63,6 +63,8 @@ def readfolder(path):
         fileList.remove("tester.py")
     if "readclass.py" in fileList:
         fileList.remove("readclass.py")
+    if "solution.py" in fileList:
+        fileList.remove("solution.py")
 
     # remove all none py file names from fileList
     index = 0 # loop index 
