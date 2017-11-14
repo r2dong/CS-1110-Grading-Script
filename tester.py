@@ -1,21 +1,31 @@
-#works with python 3.5 and windows. not tested with 3.6 or mac/linux
+# This tester works with only purely deterministic functions, i.e, functions
+# that guarantes to yield identical output with identical input. For
+# undeterministic functions, such as ones involving random numbers, it is
+# recommended to visually inspect the printed output of the function.
+
+# Works with python 3.6 and windows, and not yet tested on Linux.
 ##Willem DeJong##
 
-import solution_file as D#a file you write that does the things that the student's code should do. this method only works with purely deterministic functions. any functions that can have different outputs for a given output should be handle by checking that the outputs conforms the problem (the hard part here is making sure their scope isn't too narrow like if the function is supposed to return a RN between 1 and 10 and they do only RN between 4-7.)
+import solution_file as D#
 import random
 import os
 import sys
-    
-def teste(stfile, path=""):
-    #stfile is the name of the file (ex. "studentA_HW1")
-    #path is the path of the containing folder of the student's .py file
-    if path!="":#if a path is given it adds it to the local list of paths so that the file can be found by the __import__ function. I found that __import__ didn't work with a full path. nor does it work when the .py extention was included
+
+# test output of functions of a studnet against a solution file
+# Input: 
+# stuFile - name of student's file, without .py suffix
+# path - path to foler containing stuFile
+def teste(stuFile, path=""):
+    # if path given, adds it to local paths so that the file can be found by 
+    # __import__ function. (_import_ work with neither full path nor when .py
+    # included
+    if path!="":
         sys.path.insert(0,path)
-    stf=__import__(stfile)
-    #g is the returned list. the first thing in g should be the list of hawkIDs if the students write this function wrong they will not automatically get a grade. When you notice someone turned in a file but didn't receive a score you can find check the csv with the same name as the assignment column header in the same location as readclass.py to see grades by file. in this case if you are giving credit for the getHawkID function subtact it from that score
+    stf=__import__(stuFile)
+    # g is a list to record grades, first element of g is the list of hawkIDs.
     g=[stf.getHawkIDs(),0]#this 1 is giving credit for the getHawkIDs
-    berrs=str(g[0])+"\n"#berrs is used to construct the resulting score to be written to the students file 
-    errs=""#errs is for constructing an error log. I did this to record on students .py file when the result of their function didn't match the expected result.
+    berrs=str(g[0])+"\n"# resulting score to write into student's file 
+    errs="" # log differences between expected output and actual output
     n=""
     #***************************************************************************
     # test getMidpoint()
@@ -248,19 +258,19 @@ def teste(stfile, path=""):
         berrs+="\t"+str(x)+") "+str(i)+"\n"
         x+=1
     errs=berrs+"\n"+errs
-    err2=open(path+"/"+stfile+"_errors.txt","w")
+    err2=open(path+"/"+stuFile+"_errors.txt","w")
     err2.write(errs)
     err2.close()
     try:
-        err3=open(path+"/"+stfile+".py","r")
+        err3=open(path+"/"+stuFile+".py","r")
         pyfi=err3.read()
         err3.close()
-        iii=pyfi.find("#"+stfile+"_errors.txt")
+        iii=pyfi.find("#"+stuFile+"_errors.txt")
         if iii==-1:
             iii=len(pyfi)
         try:
-            err3=open(path+"/"+stfile+".py","w")
-            err3.write(pyfi[0:iii]+"\n\n#"+stfile+"_errors.txt\n")
+            err3=open(path+"/"+stuFile+".py","w")
+            err3.write(pyfi[0:iii]+"\n\n#"+stuFile+"_errors.txt\n")
             lines=errs.split("\n")
             for line in lines:
                 err3.write("#"+line+"\n")
