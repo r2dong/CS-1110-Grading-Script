@@ -110,7 +110,7 @@ def runtester(pyFileList, hwid, infile, outfile, path):
     colHwid = colHwid - 2
     csvIcon.close()
     
-    # this should be some sort of error recording file
+    # pyfi will be the string eventually written into csvUpload
     # we need to reopen since we still need the header line, using the same file
     # causes a syntax error when loading as well.
     csvIcon = open(infile, "r")
@@ -141,20 +141,19 @@ def runtester(pyFileList, hwid, infile, outfile, path):
             if type(hawkIDs) == list or type(hawkIDs) == tuple:
                 # to deal with partners in paried sections
                 for hawkID in hawkIDs:
-                    pyfi = insertScore(pyfi, hawkID.lower(), colHwid,total)
-                    csvUpload=open(outfile,"w") # csv to be imported back to ICON
+                    pyfi = insertScore(pyfi, hawkID.lower(), colHwid, total)
+                    csvUpload = open(outfile,"w") # csv to import back to ICON
                     csvUpload.write(pyfi)
                     csvUpload.close()
-        try:    
-            f=open(path+"/"+pyFileList[index],"r")
-            pyf=f.read()
-            f.close()
-            f=open(path+"/"+pyFileList[index],"w")
-            f.write("#$$##Grades:"+str(gradesList[index])+"\n"+pyf)
-            f.close()
+        # write summary of grades to the top of student's file
+        try:
+            stuFile = open(path + "/" + pyFileList[index], "w")
+            contents = stuFile.read()
+            stuFile.write("Grades: " + str(gradesList[index]) + "\n" + contents)
+            stuFile.close()
         except:
             pass
-    print(gradesList)
+    
     return gradesList
 
 # find and return the column number of a sepcific header, among a row of
@@ -179,6 +178,7 @@ def findColumn(headerRow, header):
         colNum += 1
     return colNum + 1 # colNum returned will be at least 0
 
+# "insert" score of students into csv to be uploaded
 def insertScore(Stng, Identifier, numcomma, score):
     if type(Identifier)!=str:
         return Stng
