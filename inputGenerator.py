@@ -1,18 +1,5 @@
-# input generator generates random inupt of specified types
-
-# input types
-#   - integer
-#   - float
-#   - string
-#   - list of elements
-#       - elements can be any type
-
+# this file contains functions to generate randomnized input
 import random
-
-# myList should have a field as a list of myElements
-
-class myElement:
-    pass
 
 def genInt(args):
     
