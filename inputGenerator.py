@@ -12,7 +12,7 @@ def genInt(args):
     
     return random.randint(lowerBound, upperBound)
 
-def genDecimal(args):
+def genFloat(args):
     
     try:
         lowerBound = args[0]
@@ -22,7 +22,7 @@ def genDecimal(args):
     
     return random.random() * (upperBound - lowerBound) + lowerBound
 
-def genString(args):
+def genStr(args):
     
     # take needed inputs and discard the rest
     try:
@@ -56,32 +56,46 @@ def genString(args):
         length -= 1
     return randString
 
-# let elementType be a string in the form of [list, list, ..., [int/decimal/string, args]]
-def genList(length, types):
+# let elementType be a string in the form of [[list, length], [list, length], ..., [int/decimal/string, args]]
+def genElement(types):
     
-    curLength = length[0]
-    curList = []
     # recursive case
-    if len(length) > 1:
-        for i in range(0, curLength):
-            for i in range(0, curLength):
-                curList.append(genList(length[1:], types))
-            return curList
+    if types[0][0] == list:
+        curList = []
+        length = types[0][1]
+        for i in range(0, length):
+            curList.append(genElement(types[1:]))
+        return curList
     # base cases
     else:
-        args = types[1] # list of arguments
-        if types[0] == int:
-            func = genInt
-        elif types[0] == float:
-            func = genDecimal
-        elif types[0] == str:
-            func = genString
-        
-        # generate random elements
-        for index in range(0, curLength):
-            curList.append(func(args))
-        return curList
-            
+        return genSingleElement(types[0])
+
+def genSingleElement(types):
+    
+    # types are limited so hard-coded
+    args = types[1] # list of arguments
+    if types[0] == int:
+        func = genInt
+    elif types[0] == float:
+        func = genFloat
+    elif types[0] == str:
+        func = genStr
+    
+    # generate random elements
+    return func(args)
+
+class argType:
+    
+    # constructor
+    def __init__(self, theType, args):
+        self.theType = theType
+        self.args = args
+    
+    # get a value of this element
+    def getValue(self):
+        types = (self.theType, self.args)
+        return genSingleElement(types)
+    
                 
                 
             
