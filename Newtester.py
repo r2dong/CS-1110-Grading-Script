@@ -1,5 +1,5 @@
 from functools import partial
-from inputGenerator import genElement
+from inputGenerator import *
 from fileUtility import *
 
 # tests the provided function once
@@ -47,7 +47,7 @@ def testFunc(func, stfName, solName):
 # sol - <str> name of solution file
 def testFile(funcs, stf, sol):
     for func in funcs:
-        times = function.testNum
+        times = func.testNum
         for dummy in range(0, times):
             testFunc(func, stf, sol)
 
@@ -69,6 +69,17 @@ class function:
     # add a new test result to this function
     def addResult(self, result):
         self.testResults.append(result)
+    
+    # return string representation of all tests done on this function
+    def allTestsToStr(self):
+        strRep = ""
+        strRep += self.name + "\n"
+        numOfTests = len(self.testResults)
+        strRep += str(numOfTests) + " tests done:\n"
+        for testNum in range(0, numOfTests):
+            strRep += "test #" + str(testNum) + "\n"
+            strRep += str(self.testResults[testNum]) + "\n\n"
+        return strRep
 
 # testResult should alwasy be used with a corresponding function
 class testResult:
@@ -82,3 +93,33 @@ class testResult:
         self.expected = expected
         self.actual = actual
         self.isCorrect = expected == actual
+    
+    # to return a string representation of this test result
+    def __str__(self):
+        strRep = ""
+        inputStr = str(self.inputs).replace("[", "(")
+        inputStr = inputStr.replace("]", ")")
+        strRep += "Inputs: " + inputStr + "\n"
+        strRep += "Expected: " + str(self.expected) + "\n"
+        strRep += "Actual: " + str(self.actual) + "\n"
+        if self.isCorrect:
+            strRep += "passed"
+        else:
+            strRep += "failed"
+        return strRep
+
+
+
+
+
+# simple test cases
+int1 = argType(int, [0, 100])
+int2 = argType(int, [0, 100])
+SorH = argType(str, [1, True, "HS"])
+getLengthFunc = function("getLength", 2, [int1, int2, SorH])
+allFuncs = [getLengthFunc]
+stfName = "granillovelasqukenneth_47840_4611593_GranilloVelasquezKennethDA2-2"
+solName = "solution_file"
+testFile(allFuncs, stfName, solName)
+print(getLengthFunc.allTestsToStr())
+
