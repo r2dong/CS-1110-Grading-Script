@@ -80,6 +80,11 @@ class function:
             strRep += "test #" + str(testNum) + "\n"
             strRep += str(self.testResults[testNum]) + "\n\n"
         return strRep
+    
+    # make a copy of this function, excludes test results
+    def copy(self):
+        return function(self.name, self.testNum, self.inputTypes, self.score)
+        
 
 # testResult should alwasy be used with a corresponding function
 class testResult:
@@ -107,10 +112,6 @@ class testResult:
         else:
             strRep += "failed"
         return strRep
-
-
-
-
 
 # simple test cases
 int1 = argType(int, [0, 100])
