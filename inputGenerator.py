@@ -24,23 +24,33 @@ def genFloat(args):
 
 def genStr(args):
     
-    # take needed inputs and discard the rest
-    try:
+    # given pool to choose from
+    if type(args[2]) == str:
         length = args[0]
-        hasUpper = args[1]
-        hasLower = args[2]
-        hasSymbol = args[3]
-        hasDuplicate = args[4]
-    except:
-        raise Exception("Invalid input arguments")
-    
-    charPool = "" # possible characters to select from
-    if hasUpper:
-        charPool += "QWERTYUIOPASDFGHJKLZXCVBNM"
-    if hasLower:
-        charPool += "qwertyuiopasdfghjklzxcvbnm"
-    if hasSymbol:
-        charPool += "`[]\;',./~!@#$%^&*()_+{}|:\"<>?"
+        hasDuplicate = args[1]
+        charPool = args[2]
+    else:
+        # take needed inputs and discard the rest
+        try:
+            length = args[0]
+            hasDuplicate = args[1]
+            hasUpper = args[2]
+            hasLower = args[3]
+            hasSymbol = args[4]
+            
+        except:
+            raise Exception("Invalid input arguments")
+        
+        charPool = "" # possible characters to select from
+        upperCaseLetters = "QWERTYUIOPASDFGHJKLZXCVBNM"
+        lowerCaseLetters = "qwertyuiopasdfghjklzxcvbnm"
+        symbols = "`[]\;',./~!@#$%^&*()_+{}|:\"<>?"
+        if hasUpper:
+            charPool += upperCaseLetters
+        if hasLower:
+            charPool += lowerCaseLetters
+        if hasSymbol:
+            charPool += symbols
     
     # build the random string
     randString = ""
