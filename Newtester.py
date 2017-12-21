@@ -10,7 +10,9 @@ from fileUtility import *
 # result:
 # the passed in function object is updated with this test result
 def testFunc(func, stfName, solName):
-     
+    
+    stfName = removeExtension(stfName)
+    solName = removeExtension(stfName)
     stfFunc = getattr(__import__(stfName), func.name)
     solFunc = getattr(__import__(solName), func.name)
     inputs = []
@@ -114,13 +116,13 @@ class testResult:
         return strRep
 
 # simple test cases
-int1 = argType(int, [0, 100])
-int2 = argType(int, [0, 100])
-SorH = argType(str, [1, True, "HS"])
-getLengthFunc = function("getLength", 2, [int1, int2, SorH])
-allFuncs = [getLengthFunc]
-stfName = "granillovelasqukenneth_47840_4611593_GranilloVelasquezKennethDA2-2"
-solName = "solution_file"
-testFile(allFuncs, stfName, solName)
-print(getLengthFunc.allTestsToStr())
+#int1 = argType(int, [0, 100])
+#int2 = argType(int, [0, 100])
+#SorH = argType(str, [1, True, "HS"])
+#getLengthFunc = function("getLength", 2, [int1, int2, SorH])
+#allFuncs = [getLengthFunc]
+#stfName = "C:/Users/Rentian Dong/Desktop/CS 1110/Improving Grading Script/testPath/granillovelasqukenneth_47840_4611593_GranilloVelasquezKennethDA2-2"
+#solName = "solution_file"
+#testFile(allFuncs, stfName, solName)
+#print(getLengthFunc.allTestsToStr())
 

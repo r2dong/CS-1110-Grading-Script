@@ -47,11 +47,10 @@ def readFolder(path):
     # make all file names absolute paths
     absoluteFileList = []
     for fileName in fileList:
-        absoluteFileList.append(path + fileName)
+        absoluteFileList.append(fileName)
         
     #returns fileList containing only names of .py files
-    return absoluteFileList
-
+    return fileList
 
 # find and return the column number of a sepcific header, among a row of
 # headers delimited by commas
@@ -139,39 +138,34 @@ def removeExtraCol(outfile,hwid):
     f.write(nf)
     f.close()
     
-# results: returned from Newtester.testFile
-def writeComments(stfName, results):
+# stfResults is returned by Main.testFile
+# writes at the end of the file
+def writeComments(stfResults):
     
-    stf = open(stfName, "r")
-    contents = stf.read()
-    stf.close()
-    
-    comments = ""
-    for resultPair in results:
+    for result in stfResults:
+        absolutePath = result.path + result.name
+        stf = open(absolutePath, "r")
+        contents = stf.read()
+        stf.close()
         
-        funcName = resultPair[0]
-        result = resultPair[1]
-        comments += "# " + funcName + ":\n"
-        inputArgs = result[0]
-        
-        # if the function is correct
-        if len(inputArgs) == 0:
-            comments += "# all good\n"
-        # otherwise print test cases not passed
-        else:
-            # assume input, expected, and actual have same length
-            for index in range(0, len(inputArg)):
-                comments += "# input:\n"
-                comments += "# " + str(inputArg[index]) + "\n"
-                comments += "# expected:\n"
-                comments += "# " + str(expected[index]) + "\n"
-                comments += "# actual:\n"
-                comments += "# " + str(actual[index]) + "\n"
-    
-    stf = open(stfName, "w")
-    stf.write(contents + "\n\n# " + comments)
-    stf.close()
+        comments = str(result)
+        comments = toggleComment(comments)
+        stf = open(absolutePath, "w")
+        stf.write(contents + "\n" + comments)
+        stf.close()
 
-    
-    
+# add "#" to each line of comment
+def toggleComment(comment):
+    comment = "# " + comment
+    comment = comment.replace("\n", "\n# ")
+    return comment
 
+# remove the extension from a string file name
+def removeExtension(fileName):
+    extLoc = fileName.rfind(".")
+    if extLoc == -1:
+        # do nothing if file name has no extension
+        return fileName
+    else:
+        return fileName[:extLoc]
+    
