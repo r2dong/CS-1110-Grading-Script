@@ -141,17 +141,12 @@ def removeExtraCol(outfile,hwid):
 # stfResults is returned by Main.testFile
 # writes at the end of the file
 def writeComments(stfResults):
-    
     for result in stfResults:
         absolutePath = result.path + result.name
-        stf = open(absolutePath, "r")
-        contents = stf.read()
-        stf.close()
-        
         comments = str(result)
         comments = toggleComment(comments)
-        stf = open(absolutePath, "w")
-        stf.write(contents + "\n" + comments)
+        stf = open(absolutePath, "a")
+        stf.write("\n" + comments)
         stf.close()
 
 # add "#" to each line of comment
