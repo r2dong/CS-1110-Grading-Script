@@ -1,10 +1,9 @@
 from inputGenerator import argType
 from Newtester import function
 from Newtester import testFile
-from fileUtility import readFolder
-from fileUtility import removeExtension
-from fileUtility import writeComments
+from fileUtility import *
 import sys
+import argparse
 
 #**********************************************************************************************************************************
 #These are to be changed as needed
@@ -85,6 +84,41 @@ NUMPROB = 4
     #gradesList=runtester(clist,HWID7,INFILE7,OUTFILE7,PATH7)
     #removeExtraCol(OUTFILE7,HWID7)
 
+funcInputFile = "C:/Users/Rentian Dong/Desktop/inputFuncSpecs.txt"
+
+# first parse command line arguments
+# -p: paths to folders containing files to be tested
+# -s: path to correct implementation
+# -o: customized output method, optional
+# -a: optional arguments required by specified output method
+def main():
+    
+    # parse command line arguments
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-p", nargs = "+", dest = "paths", type = str)
+    parser.add_argument("-s", nargs = 1, dest = "sol", type = str)
+    parser.add_argument("-o", nargs = "?", dest = "outMethod", type = str)
+    parser.add_argument("-a", nargs = "*", dest = "optArgs", type = str)
+    cmdArgs = parser.parse_args()
+    
+    # parse function input information from file
+    funcs = parseFuncSpec(funcInputFile)
+    
+    # run all tests
+    stfResults = gradeFiles(cmdArgs.paths, cmdArgs.sol, funcs)
+    for result in stfResults:
+        print(str(result))    
+    writeComments(stfResults)
+    
+    # write output using provided method
+    if not len(cmdArgs.outMethod) == 0:
+        index = 0
+        for arg in cmdArgs.optArgs:
+            cmdARgs.optArgs[index] = stringToArg(cmdArgs.optArgs[index])
+            index += 1
+        outMethod = __import__(outMethod)
+        outMethod.writeOutput(stfResults, cmdArgs.optArgs)
+
 # gradeFiles tests all given homework files
 #
 # inputs:
@@ -110,13 +144,6 @@ def gradeFiles(paths, sol, funcs):
             stfResults.append(stfResult)
             testFile(stfResult.funcs, stfResult.name, sol)
     return stfResults
-    
-def main(paths, sol, funcs):
-    stfResults = gradeFiles(paths, sol, funcs)
-    for result in stfResults:
-        print(str(result))    
-    writeComments(stfResults)
-    
 
 class studentFile:
     
@@ -158,7 +185,12 @@ int42 = argType(int, [0, 10])
 str41 = argType(str, [1, True, "HS"])
 getLengthFunc = function("getLength", 2, [int41, int42, str41])
 funcs = [midPointFunc, getAvgFunc, getAvgStrFunc, getLengthFunc]
-main(paths, sol, funcs)
+outFile = "C:/Users/Rentian Dong/Desktop/CS 1110/Improving Grading Script/4/newGrades4.csv"
+hwID = "DA 2 Final Submission (548734)"
+inFile = "C:/Users/Rentian Dong/Desktop/CS 1110/Improving Grading Script/4/05_Sep_20_27_Grades-CS_1110_0A04_Fall17.csv"
+
+# main(paths, sol, funcs, "introToCS", outFile, hwID, inFile)
+main()
 
 
 

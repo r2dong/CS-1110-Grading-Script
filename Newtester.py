@@ -72,6 +72,10 @@ class function:
     def addResult(self, result):
         self.testResults.append(result)
     
+    # add a new input argument to this function
+    def addInput(self, arg):
+        self.inputTypes.append(arg)
+    
     # return string representation of all tests done on this function
     def allTestsToStr(self):
         strRep = ""

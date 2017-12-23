@@ -9,8 +9,8 @@
 import os
 import re
 import tester
-
-#
+# not working import
+os.system("Newtester.py")
 
 #reads in the list of file/folders in path and make a list of .py files 
 def readFolder(path):
@@ -51,92 +51,6 @@ def readFolder(path):
         
     #returns fileList containing only names of .py files
     return fileList
-
-# find and return the column number of a sepcific header, among a row of
-# headers delimited by commas
-# Input:
-# header - the header line from the ICON exported csv
-# hwid - the header 
-# Output:
-# an integer >= 0 representing the column number
-def findColumn(headerRow, header):
-    
-    colNum = -1 # column number of header
-    start = 0 # starting index of header to look for in string
-    
-    while True:
-        end = headerRow.find(",", start) # index of the next comma
-        if end == -1:
-            return colNum + 1
-        if headerRow[start:end] == header:
-            break
-        start = end + 1
-        colNum += 1
-    return colNum + 1 # colNum returned will be at least 0
-
-# "insert" score of students into csv to be uploaded
-def insertScore(Stng, Identifier, numcomma, score):
-    if type(Identifier)!=str:
-        return Stng
-    try:
-        if type(int(Identifier))==int:
-            print("X")
-            return Stng
-    except:
-        pass
-    ind=Stng.find(","+Identifier+",")+1
-    print(ind)
-    iii=Stng.rfind(",",0,ind-1)+1
-    print(iii)
-    print(Stng[iii:ind-1])
-    try:
-        int(Stng[iii:ind-1])
-    except:
-        print("XX")
-        return Stng
-    if ind==0:
-        print("XXX")
-        return Stng
-    for i in range(0,numcomma):
-        ind=Stng.find(",",ind)+1
-    if ind==0:
-        return Stng
-    ind2=Stng.find(",",ind)
-    if ind2==-1:
-        return Stng[:ind]+str(score)
-    else:
-        return Stng[:ind]+str(score)+Stng[ind2:]
-
-# removes extra columns from CSV to re-import to ICON, so that empty spaces do
-# not overwrite other grades
-def removeExtraCol(outfile,hwid):
-    f=open(outfile,"r")
-    nf=""
-    b=True
-    colHwid=0
-    for line in f:
-        if b:
-            colHwid=findColumn(line,hwid)
-            colHwid-=4
-            b=False
-        ind=-1
-        for i in range(0,4): # changed from 5 to 4 Aug 23 2017
-            ind=line.find(",",ind+1)
-        
-        nf=nf+line[:ind]
-        ind2=ind
-        for i in range(0,colHwid):
-            ind2=line.find(",",ind2+1)
-        #print(line[ind2:line.find(",",ind2+1)])
-        #input()
-        nf=nf+line[ind2:line.find(",",ind2+1)]+"\n"
-        #1print(nf)
-    #pyfi=f.read()
-    f.close()
-    #print(nf)
-    f=open(outfile,"w")
-    f.write(nf)
-    f.close()
     
 # stfResults is returned by Main.testFile
 # writes at the end of the file
@@ -164,3 +78,96 @@ def removeExtension(fileName):
     else:
         return fileName[:extLoc]
     
+# turn a csv into a matrix (list of list)
+def csvToMatrix(csvFileName):
+    file = open(csvFileName, "r")
+    matrix = []
+    for line in file:
+        line = line.replace("\n", "")
+        row = re.split(",", line)
+        matrix.append(row)
+    file.close()
+    return matrix
+
+# write a matrix into CSV file
+def matrixToCsv(matrix, outFileName):
+    strToWrite = ""
+    for row in matrix:
+        for element in row:
+            strToWrite += str(element) + ","
+        strToWrite += "\n"
+    file = open(outFileName, "w")
+    file.write(strToWrite)
+    file.close()
+
+# find column number of the specified header
+def findColumn(matrix, colHeader):
+    firstRow = matrix[0]
+    col = 0
+    for header in firstRow:
+        if header == colHeader:
+            return col
+        else:
+            col += 1
+    # in case colHeader does not exist
+    return -1
+
+# convert a string to type using hard code
+def stringToType(string):
+    if string == "str":
+        return str
+    elif string == "int":
+        return int
+    elif string == "float":
+        return float
+    else:
+        return None
+
+# convert an argument to argType from string to correct type
+def stringToArg(string):
+    string = string.split(":")
+    theType = string[0]
+    arg = string[1]
+    if theType == "int":
+        return int(arg)
+    elif theType == "float":
+        return float(arg)
+    else:
+        return arg
+        
+# fName: full path to file to be parsed
+def parseFuncSpec(fName):
+    
+    funcs = []
+    file = open(fName, "r")
+    
+    for line in file:
+        
+        line = line.replace("\n", "")
+        args = line.split(" ")
+        
+        # create function
+        if "function" in line:
+            funcName = args[1]
+            numTest = int(args[2])
+            try:
+                score = args[3]
+            except:
+                score = 1
+            curFunc = function(funcName, numTest, [], score)
+            funcs.append(curFunc)
+        # add inputs for the function
+        else:
+            theType = stringToType(args[0])
+            typeArgs = args[1:]
+            argsLength = len(typeArgs)
+            for index in range(0, argsLength):
+                typeArgs[index] = stringToArg(typeArgs[index])
+            curInput = argType(theType, typeArgs)
+            curFunc.addInput(curInput)
+    
+    file.close()
+    return funcs
+        
+        
+            
