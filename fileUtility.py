@@ -8,9 +8,8 @@
 #to record name
 import os
 import re
-import tester
-# not working import
-os.system("Newtester.py")
+import Newtester
+import inputGenerator
 
 #reads in the list of file/folders in path and make a list of .py files 
 def readFolder(path):
@@ -125,9 +124,9 @@ def stringToType(string):
 
 # convert an argument to argType from string to correct type
 def stringToArg(string):
-    string = string.split(":")
-    theType = string[0]
-    arg = string[1]
+    delimiterPos = string.find(":")
+    theType = string[:delimiterPos]
+    arg = string[(delimiterPos + 1):]
     if theType == "int":
         return int(arg)
     elif theType == "float":
@@ -154,7 +153,7 @@ def parseFuncSpec(fName):
                 score = args[3]
             except:
                 score = 1
-            curFunc = function(funcName, numTest, [], score)
+            curFunc = Newtester.function(funcName, numTest, [], score)
             funcs.append(curFunc)
         # add inputs for the function
         else:
@@ -163,7 +162,7 @@ def parseFuncSpec(fName):
             argsLength = len(typeArgs)
             for index in range(0, argsLength):
                 typeArgs[index] = stringToArg(typeArgs[index])
-            curInput = argType(theType, typeArgs)
+            curInput = inputGenerator.argType(theType, typeArgs)
             curFunc.addInput(curInput)
     
     file.close()

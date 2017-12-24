@@ -114,9 +114,9 @@ def main():
     if not len(cmdArgs.outMethod) == 0:
         index = 0
         for arg in cmdArgs.optArgs:
-            cmdARgs.optArgs[index] = stringToArg(cmdArgs.optArgs[index])
+            cmdArgs.optArgs[index] = stringToArg(cmdArgs.optArgs[index])
             index += 1
-        outMethod = __import__(outMethod)
+        outMethod = __import__(cmdArgs.outMethod)
         outMethod.writeOutput(stfResults, cmdArgs.optArgs)
 
 # gradeFiles tests all given homework files
