@@ -1,6 +1,7 @@
 from functools import partial
 from inputGenerator import *
 from fileUtility import *
+import copy
 
 # tests the provided function once
 # inputs:
@@ -50,9 +51,9 @@ def testFunc(func, stfName, solName):
 def testFile(funcs, stf, sol):
     for func in funcs:
         times = func.testNum
-        for dummy in range(0, times):
+        for index in range(0, times):
+            print("Testing " + func.name + " " + str(index), flush = True)
             testFunc(func, stf, sol)
-
 class function:
     
     # constructor

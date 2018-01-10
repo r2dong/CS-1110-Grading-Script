@@ -97,16 +97,31 @@ def genSingleElement(types):
 class argType:
     
     # constructor
-    def __init__(self, theType, args):
+    def __init__(self, theType, *args, valSet = []):
         self.theType = theType
         self.args = args
+        # fixed set of input
+        if len(valSet) != 0:
+            print("new fixed set arguments", flush = True)
+            self.isFixedSet = True
+            self.valSet = valSet
+            self.iterCount = 0
+        else:
+            print("new random arguments", flush = True)
+            self.isFixedSet = False
     
     # get a value of this element
     def getValue(self):
-        types = (self.theType, self.args)
-        return genSingleElement(types)
-    
-                
-                
-            
-            
+        if self.isFixedSet:
+            # make a copy when possible
+            try:
+                toReturn = self.valSet[self.iterCount].copy()
+            except:
+                toReturn = self.valSet[self.iterCount]
+            # debug output
+            print("Returning " + str(self.iterCount) + " value from fixed set", flush = True)
+            self.iterCount += 1
+            return toReturn
+        else:
+            types = (self.theType, self.args)
+            return genSingleElement(types)

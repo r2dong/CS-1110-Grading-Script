@@ -6,7 +6,7 @@ IDCol = 2
 
 def writeOutput(stfResults, optArgs):
     
-    outFileName = optArgs[0]
+    outFileName = optArgs[0] # consider removing, user really need no control over this
     hwID = optArgs[1]
     fullCSVName = optArgs[2]
     

@@ -280,3 +280,56 @@ def teste(stuFile, path=""):
     except:
         pass
     return g
+
+# old run tester
+def runtester(pyFileList, hwid, infile, outfile, path):
+    
+    # find column number of the homework ID in the ICON csv
+    csvIcon = open(infile, "r")
+    for line in csvIcon: # type of line is string
+        header = line.replace("\n","")
+        break
+    colHwid = findColumn(header, hwid)
+    colHwid = colHwid - 2
+    csvIcon.close()
+    
+    # pyfi will be the string eventually written into csvUpload
+    # we need to reopen since we still need the header line, using the same file
+    # causes a syntax error when loading as well.
+    csvIcon = open(infile, "r")
+    pyfi = csvIcon.read()
+    csvIcon.close()
+    
+    # gradesList: first element of internal list will be the list of hawkid(s), 
+    # the rest of the internal lists will be the points for each problem. 1 for
+    # correct function, 0 for incorrect function and the string "0" if an error 
+    # is raised in calling it.
+    gradesList=[]
+    
+    #loop that goes through pyFileList and test each file
+    for index in range(0, len(pyFileList)):
+        fileName = pyFileList[index][:pyFileList[index].rfind(".py")]
+        print(fileName)
+        try:
+            testResult = tester.teste(fileName, path)
+        except: # if student's file fail to load (syntax errors)
+            testResult = -1
+        gradesList.append(testResult)
+        
+        # calculate total score if no exception with student's file, write scores
+        # into csv files that will be re-uploaded to ICON
+        if gradesList[index] != -1:
+            total = sum(gradesList[index][1:])
+            hawkIDs = gradesList[index][0]
+            if type(hawkIDs) == list or type(hawkIDs) == tuple:
+                # to deal with partners in paried sections
+                for hawkID in hawkIDs:
+                    pyfi = insertScore(pyfi, hawkID.lower(), colHwid, total)
+                    csvUpload = open(outfile,"w") # csv to import back to ICON
+                    csvUpload.write(pyfi)
+                    csvUpload.close()
+        # write summary of grades to the top of student's file
+        # TODO writeComments
+        # TODO writeSummary
+    
+    return gradesList

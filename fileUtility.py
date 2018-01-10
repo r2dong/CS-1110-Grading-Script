@@ -55,7 +55,11 @@ def readFolder(path):
 # writes at the end of the file
 def writeComments(stfResults):
     for result in stfResults:
-        absolutePath = result.path + result.name
+        absolutePath = result.path + "\\" +  result.name
+        
+        # debug output
+        print("Writing output to result " + absolutePath, flush = True)
+        
         comments = str(result)
         comments = toggleComment(comments)
         stf = open(absolutePath, "a")
@@ -145,6 +149,9 @@ def parseFuncSpec(fName):
         line = line.replace("\n", "")
         args = line.split(" ")
         
+        # debug output
+        print("Parsing line: " + line, flush = True)        
+        
         # create function
         if "function" in line:
             funcName = args[1]
@@ -157,12 +164,27 @@ def parseFuncSpec(fName):
             funcs.append(curFunc)
         # add inputs for the function
         else:
-            theType = stringToType(args[0])
-            typeArgs = args[1:]
-            argsLength = len(typeArgs)
-            for index in range(0, argsLength):
-                typeArgs[index] = stringToArg(typeArgs[index])
-            curInput = inputGenerator.argType(theType, typeArgs)
+            # case of fixed set input
+            if args[0] == "fixed":
+                theType = stringToType(args[1])
+                vals = []
+                for index in range(2, len(args)):
+                    nextVal = theType(args[index])
+                    vals.append(nextVal)
+                
+                # create the inputArg object
+                curInput = inputGenerator.argType(theType, valSet = vals)
+                                                  
+            # case of random input
+            else:
+                theType = stringToArg(args[0])
+                typeArgs = args[1:]
+                argsLength = len(typeArgs)
+                for index in range(0, argsLength):
+                    typeArgs[index] = stringToArg(typeArgs[index])
+                curInput = inputGenerator.argType(theType, typeArgs)
+            
+            # append the current input argument to the function
             curFunc.addInput(curInput)
     
     file.close()

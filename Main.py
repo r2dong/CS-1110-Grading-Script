@@ -4,6 +4,7 @@ from Newtester import testFile
 from fileUtility import *
 import sys
 import argparse
+import copy
 
 #**********************************************************************************************************************************
 #These are to be changed as needed
@@ -84,7 +85,8 @@ NUMPROB = 4
     #gradesList=runtester(clist,HWID7,INFILE7,OUTFILE7,PATH7)
     #removeExtraCol(OUTFILE7,HWID7)
 
-funcInputFile = "C:/Users/Rentian Dong/Desktop/inputFuncSpecs.txt"
+# information on input arguments to functions to be tested
+funcInputFile = "C:/Users/Rentian Dong/Desktop/inputFuncSpecsFixed.txt"
 
 # first parse command line arguments
 # -p: paths to folders containing files to be tested
@@ -102,12 +104,17 @@ def main():
     cmdArgs = parser.parse_args()
     
     # parse function input information from file
+    # (this file should remain the same for all calls, just a way to pass in
+    # information regarding functions, so we may use the same file name)
     funcs = parseFuncSpec(funcInputFile)
     
+    # debug output
+    print("Functions to be tested are:", flush = True)
+    for func in funcs:
+        print(func.name + " " + str(func.testNum), flush = True)
+        
     # run all tests
-    stfResults = gradeFiles(cmdArgs.paths, cmdArgs.sol, funcs)
-    for result in stfResults:
-        print(str(result))    
+    stfResults = gradeFiles(cmdArgs.paths, cmdArgs.sol, funcs)    
     writeComments(stfResults)
     
     # write output using provided method
@@ -139,11 +146,22 @@ def gradeFiles(paths, sol, funcs):
         for stf in files:
             funcsCopy = []
             for func in funcs:
-                funcsCopy.append(func.copy()) 
+                aCopy = copy.deepcopy(func)
+                print("appending copy of " + aCopy.name + " to " + stf, flush = True) 
+                funcsCopy.append(aCopy)
+                
             stfResult = studentFile(stf, path, funcsCopy)
             stfResults.append(stfResult)
             testFile(stfResult.funcs, stfResult.name, sol)
     return stfResults
+
+# helper method to convert command line arguments to Ture/False in Python
+def stringToBool(myString):
+    myString = myString.lower()
+    if myString in ("false", "0"):
+        return False
+    else:
+        return True
 
 class studentFile:
     
@@ -165,31 +183,31 @@ class studentFile:
         return strRep
 
 # some simple test cases
-path = "C:/Users/Rentian Dong/Desktop/CS 1110/Improving Grading Script/testPath/"
-paths = [path]
-sol = "solution_file.py"
-int11 = argType(int, [0, 100])
-int12 = argType(int, [0, 100])
-int13 = argType(int, [0, 100])
-int14 = argType(int, [0, 100])
-midPointFunc = function("getMidpoint", 2, [int11, int12, int13, int14])
-int21 = argType(int, [0, 100])
-int22 = argType(int, [0, 100])
-int23 = argType(int, [0, 100])
-int24 = argType(int, [0, 100])
-int25 = argType(int, [0, 100])
-getAvgFunc = function("getAverage", 2, [int21, int22, int23, int24, int25])
-getAvgStrFunc = function("getAverageString", 2, [int21, int22, int23, int24, int25])
-int41 = argType(int, [0, 10])
-int42 = argType(int, [0, 10])
-str41 = argType(str, [1, True, "HS"])
-getLengthFunc = function("getLength", 2, [int41, int42, str41])
-funcs = [midPointFunc, getAvgFunc, getAvgStrFunc, getLengthFunc]
-outFile = "C:/Users/Rentian Dong/Desktop/CS 1110/Improving Grading Script/4/newGrades4.csv"
-hwID = "DA 2 Final Submission (548734)"
-inFile = "C:/Users/Rentian Dong/Desktop/CS 1110/Improving Grading Script/4/05_Sep_20_27_Grades-CS_1110_0A04_Fall17.csv"
-
+# path = "C:/Users/Rentian Dong/Desktop/CS 1110/Improving Grading Script/testPath/"
+# paths = [path]
+# sol = "solution_file.py"
+# int11 = argType(int, [0, 100])
+# int12 = argType(int, [0, 100])
+# int13 = argType(int, [0, 100])
+# int14 = argType(int, [0, 100])
+# midPointFunc = function("getMidpoint", 2, [int11, int12, int13, int14])
+# int21 = argType(int, [0, 100])
+# int22 = argType(int, [0, 100])
+# int23 = argType(int, [0, 100])
+# int24 = argType(int, [0, 100])
+# int25 = argType(int, [0, 100])
+# getAvgFunc = function("getAverage", 2, [int21, int22, int23, int24, int25])
+# getAvgStrFunc = function("getAverageString", 2, [int21, int22, int23, int24, int25])
+# int41 = argType(int, [0, 10])
+# int42 = argType(int, [0, 10])
+# str41 = argType(str, [1, True, "HS"])
+# getLengthFunc = function("getLength", 2, [int41, int42, str41])
+# funcs = [midPointFunc, getAvgFunc, getAvgStrFunc, getLengthFunc]
+# outFile = "C:/Users/Rentian Dong/Desktop/CS 1110/Improving Grading Script/4/newGrades4.csv"
+# hwID = "DA 2 Final Submission (548734)"
+# inFile = "C:/Users/Rentian Dong/Desktop/CS 1110/Improving Grading Script/4/05_Sep_20_27_Grades-CS_1110_0A04_Fall17.csv"
 # main(paths, sol, funcs, "introToCS", outFile, hwID, inFile)
+
 main()
 
 
