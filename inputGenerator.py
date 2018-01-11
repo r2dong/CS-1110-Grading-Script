@@ -90,6 +90,8 @@ def genSingleElement(types):
         func = genFloat
     elif types[0] == str:
         func = genStr
+    else:
+        raise Exception("Unidentified type: " + str(types[0]))
     
     # generate random elements
     return func(args)
@@ -97,18 +99,19 @@ def genSingleElement(types):
 class argType:
     
     # constructor
-    def __init__(self, theType, *args, valSet = []):
+    def __init__(self, theType, args, valSet = []):
         self.theType = theType
         self.args = args
+        self.iterCount = 0
         # fixed set of input
         if len(valSet) != 0:
             print("new fixed set arguments", flush = True)
             self.isFixedSet = True
             self.valSet = valSet
-            self.iterCount = 0
         else:
             print("new random arguments", flush = True)
             self.isFixedSet = False
+            self.valSet = None
     
     # get a value of this element
     def getValue(self):

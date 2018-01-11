@@ -54,6 +54,7 @@ def testFile(funcs, stf, sol):
         for index in range(0, times):
             print("Testing " + func.name + " " + str(index), flush = True)
             testFunc(func, stf, sol)
+
 class function:
     
     # constructor

@@ -1,7 +1,6 @@
 from inputGenerator import argType
-from Newtester import function
-from Newtester import testFile
-from fileUtility import *
+from Newtester import *
+import fileUtility
 import sys
 import argparse
 import copy
@@ -86,13 +85,16 @@ NUMPROB = 4
     #removeExtraCol(OUTFILE7,HWID7)
 
 # information on input arguments to functions to be tested
-funcInputFile = "C:/Users/Rentian Dong/Desktop/inputFuncSpecsFixed.txt"
+funcInputFile = "C:/Users/Rentian Dong/Desktop/inputFuncSpecs.txt"
 
 # first parse command line arguments
-# -p: paths to folders containing files to be tested
-# -s: path to correct implementation
-# -o: customized output method, optional
-# -a: optional arguments required by specified output method
+# -p: paths to folders containing files to be tested (path)
+# -s: path to correct implementation (solution)
+# -o: customized output method, optional (output)
+# -a: optional arguments required by specified output method (additional)
+# -i: whether inputs to functions of all files should be the same, arguments are
+#     parsed as strings and converted to bool later by function "stringToBool".
+#     Was not able to find a more native solution from google.
 def main():
     
     # parse command line arguments
@@ -101,12 +103,21 @@ def main():
     parser.add_argument("-s", nargs = 1, dest = "sol", type = str)
     parser.add_argument("-o", nargs = "?", dest = "outMethod", type = str)
     parser.add_argument("-a", nargs = "*", dest = "optArgs", type = str)
+    parser.add_argument("-i", nargs = 1, dest = "isIdentical", type = str)
     cmdArgs = parser.parse_args()
     
     # parse function input information from file
     # (this file should remain the same for all calls, just a way to pass in
     # information regarding functions, so we may use the same file name)
-    funcs = parseFuncSpec(funcInputFile)
+    funcs = fileUtility.parseFuncSpec(funcInputFile)
+    
+    # turn random inputs into fixed inputs if required
+    if cmdArgs.isIdentical != None:
+        isIdentical = fileUtility.stringToBool(cmdArgs.isIdentical[0])
+    else:
+        isIdentical = False
+    if isIdentical:
+        randomToFixed(funcs)
     
     # debug output
     print("Functions to be tested are:", flush = True)
@@ -155,13 +166,15 @@ def gradeFiles(paths, sol, funcs):
             testFile(stfResult.funcs, stfResult.name, sol)
     return stfResults
 
-# helper method to convert command line arguments to Ture/False in Python
-def stringToBool(myString):
-    myString = myString.lower()
-    if myString in ("false", "0"):
-        return False
-    else:
-        return True
+# helper function to convert random inputs to fixed inputs
+def randomToFixed(funcs):
+    for func in funcs:
+        for arg in func.inputTypes:
+            valSet = []
+            for index in range(0, func.testNum):
+                valSet.append(arg.getValue())
+            arg.isFixedSet = True
+            arg.valSet = valSet
 
 class studentFile:
     
@@ -209,6 +222,13 @@ class studentFile:
 # main(paths, sol, funcs, "introToCS", outFile, hwID, inFile)
 
 main()
+
+#Donny is stupid, he is not even 1 per cent as smart as Daisy.
+#Python is not fun, I guess.
+#Why Donny always study at midnight?
+#Cuz he is crazy, young generation like him don't like to sleep.
+#Me old, me sleep.
+
 
 
 

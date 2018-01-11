@@ -124,7 +124,7 @@ def stringToType(string):
     elif string == "float":
         return float
     else:
-        return None
+        raise Exception("unidentified string to arg: " + string)
 
 # convert an argument to argType from string to correct type
 def stringToArg(string):
@@ -135,8 +135,20 @@ def stringToArg(string):
         return int(arg)
     elif theType == "float":
         return float(arg)
-    else:
+    elif theType == "str" or theType == "string":
         return arg
+    elif theType == "boolean":
+        return stringToBool(string)
+    else:
+        raise Exception("Unable to parse string to arg: " + arg)
+
+# helper function to convert command line arguments to Ture/False in Python
+def stringToBool(myString):
+    myString = myString.lower()
+    if myString in ("false", "0"):
+        return False
+    else:
+        return True
         
 # fName: full path to file to be parsed
 def parseFuncSpec(fName):
@@ -167,6 +179,7 @@ def parseFuncSpec(fName):
             # case of fixed set input
             if args[0] == "fixed":
                 theType = stringToType(args[1])
+                print("parsed type " + args[1] + " as " + str(theType))
                 vals = []
                 for index in range(2, len(args)):
                     nextVal = theType(args[index])
@@ -177,11 +190,14 @@ def parseFuncSpec(fName):
                                                   
             # case of random input
             else:
-                theType = stringToArg(args[0])
+                theType = stringToType(args[0])
+                print("parse type " + args[0] +  " as " + str(theType))
                 typeArgs = args[1:]
                 argsLength = len(typeArgs)
                 for index in range(0, argsLength):
+                    print("parsing argument: " + typeArgs[index])
                     typeArgs[index] = stringToArg(typeArgs[index])
+                print("creating new random input with type: " + str(theType) + " and args: " + str(typeArgs), flush = True)
                 curInput = inputGenerator.argType(theType, typeArgs)
             
             # append the current input argument to the function
