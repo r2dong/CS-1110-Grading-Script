@@ -1,9 +1,6 @@
 # This script was originally written by Willem Dejong. Rentian worked on
 # improving style of the code and making a few improvements to functionality.
 
-# Development Notes
-# Correct Scores should be [[['jaalbaugh'], 0, 1, 0, 0, 1], [['ljcochrane'], 0, 1, 1, 1, 1]], and
-# [[['edbuckley'], 0, 1, 1, 1, 1], [['tntrres'], 0, '0', '0', '0', '0']]
 
 # to record name
 import os
