@@ -5,18 +5,20 @@
 # Correct Scores should be [[['jaalbaugh'], 0, 1, 0, 0, 1], [['ljcochrane'], 0, 1, 1, 1, 1]], and
 # [[['edbuckley'], 0, 1, 1, 1, 1], [['tntrres'], 0, '0', '0', '0', '0']]
 
-#to record name
+# to record name
 import os
 import re
 import Newtester
 import inputGenerator
+import ast
 
-#reads in the list of file/folders in path and make a list of .py files 
+
+# reads in the list of file/folders in path and make a list of .py files
 def readFolder(path):
-    #creates a list of items in the directory of path
-    fileList=os.listdir(path)
-    
-    #removes testing .py codes from fileList, if they are in it
+    # creates a list of items in the directory of path
+    fileList = os.listdir(path)
+
+    # removes testing .py codes from fileList, if they are in it
     if "tester.py" in fileList:
         fileList.remove("tester.py")
     if "readclass.py" in fileList:
@@ -25,7 +27,7 @@ def readFolder(path):
         fileList.remove("solution.py")
 
     # remove all none py file names from fileList
-    index = 0 # loop index 
+    index = 0  # loop index
     while index < len(fileList):
         # finds index of last '.' in file names. If no '.', it will be 0 and 
         # will check against the entire file name and fail. (unlesss it is a
@@ -34,7 +36,7 @@ def readFolder(path):
             fileExtIndex = fileList[index].rfind(".") + 1
         except:
             break
-        #if it does not have a "py" as a the file extention remove from list
+        # if it does not have a "py" as a the file extention remove from list
         if fileExtIndex == -1 or fileList[index][fileExtIndex:].lower() != "py":
             try:
                 fileList.remove(fileList[index])
@@ -42,35 +44,38 @@ def readFolder(path):
                 print("Failed removing non-py file")
         else:
             index += 1
-    
+
     # make all file names absolute paths
     absoluteFileList = []
     for fileName in fileList:
         absoluteFileList.append(fileName)
-        
-    #returns fileList containing only names of .py files
+
+    # returns fileList containing only names of .py files
     return fileList
-    
+
+
 # stfResults is returned by Main.testFile
 # writes at the end of the file
 def writeComments(stfResults):
     for result in stfResults:
-        absolutePath = result.path + "\\" +  result.name
-        
+        absolutePath = result.path + "\\" + result.name
+
         # debug output
-        print("Writing output to result " + absolutePath, flush = True)
-        
+        print("Writing output to result " + absolutePath, flush=True)
+
         comments = str(result)
         comments = toggleComment(comments)
         stf = open(absolutePath, "a")
         stf.write("\n" + comments)
         stf.close()
 
+
 # add "#" to each line of comment
 def toggleComment(comment):
     comment = "# " + comment
     comment = comment.replace("\n", "\n# ")
     return comment
+
 
 # remove the extension from a string file name
 def removeExtension(fileName):
@@ -80,7 +85,8 @@ def removeExtension(fileName):
         return fileName
     else:
         return fileName[:extLoc]
-    
+
+
 # turn a csv into a matrix (list of list)
 def csvToMatrix(csvFileName):
     file = open(csvFileName, "r")
@@ -92,6 +98,7 @@ def csvToMatrix(csvFileName):
     file.close()
     return matrix
 
+
 # write a matrix into CSV file
 def matrixToCsv(matrix, outFileName):
     strToWrite = ""
@@ -102,6 +109,7 @@ def matrixToCsv(matrix, outFileName):
     file = open(outFileName, "w")
     file.write(strToWrite)
     file.close()
+
 
 # find column number of the specified header
 def findColumn(matrix, colHeader):
@@ -115,6 +123,7 @@ def findColumn(matrix, colHeader):
     # in case colHeader does not exist
     return -1
 
+
 # convert a string to type using hard code
 def stringToType(string):
     if string == "str":
@@ -125,6 +134,7 @@ def stringToType(string):
         return float
     else:
         raise Exception("unidentified string to arg: " + string)
+
 
 # convert an argument to argType from string to correct type
 def stringToArg(string):
@@ -142,6 +152,7 @@ def stringToArg(string):
     else:
         raise Exception("Unable to parse string to arg: " + arg)
 
+
 # helper function to convert command line arguments to Ture/False in Python
 def stringToBool(myString):
     myString = myString.lower()
@@ -149,21 +160,21 @@ def stringToBool(myString):
         return False
     else:
         return True
-        
+
+
 # fName: full path to file to be parsed
-def parseFuncSpec(fName):
-    
+def parseFuncSpec(fileName):
     funcs = []
-    file = open(fName, "r")
-    
+    file = open(fileName, "r")
+
     for line in file:
-        
+
         line = line.replace("\n", "")
         args = line.split(" ")
-        
+
         # debug output
-        print("Parsing line: " + line, flush = True)        
-        
+        print("Parsing line: " + line, flush=True)
+
         # create function
         if "function" in line:
             funcName = args[1]
@@ -176,35 +187,28 @@ def parseFuncSpec(fName):
             funcs.append(curFunc)
         # add inputs for the function
         else:
-            # case of fixed set input
-            if args[0] == "fixed":
-                theType = stringToType(args[1])
-                print("parsed type " + args[1] + " as " + str(theType))
+            if args[0] == "fixed":  # case of fixed set input
+                args = args[1:]
                 vals = []
-                for index in range(2, len(args)):
-                    nextVal = theType(args[index])
-                    vals.append(nextVal)
-                
+                for arg in args:
+                    vals.append(ast.literal_eval(arg))
                 # create the inputArg object
-                curInput = inputGenerator.argType(theType, valSet = vals)
-                                                  
+                curInput = inputGenerator.argType(type(args[0]), valSet=vals)
             # case of random input
             else:
                 theType = stringToType(args[0])
-                print("parse type " + args[0] +  " as " + str(theType))
+                print("parse type " + args[0] + " as " + str(theType))
                 typeArgs = args[1:]
                 argsLength = len(typeArgs)
                 for index in range(0, argsLength):
                     print("parsing argument: " + typeArgs[index])
                     typeArgs[index] = stringToArg(typeArgs[index])
-                print("creating new random input with type: " + str(theType) + " and args: " + str(typeArgs), flush = True)
+                print("creating new random input with type: " + str(theType) + " and args: " + str(typeArgs),
+                      flush=True)
                 curInput = inputGenerator.argType(theType, typeArgs)
-            
+
             # append the current input argument to the function
             curFunc.addInput(curInput)
-    
+
     file.close()
     return funcs
-        
-        
-            
