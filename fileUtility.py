@@ -64,44 +64,6 @@ def findColumn(matrix, colHeader):
     return -1
 
 
-# convert a string to type using hard code
-def stringToType(string):
-    if string == "str":
-        return str
-    elif string == "int":
-        return int
-    elif string == "float":
-        return float
-    else:
-        raise Exception("unidentified string to arg: " + string)
-
-
-# convert an argument to argType from string to correct type
-def stringToArg(string):
-    delimiterPos = string.find(":")
-    theType = string[:delimiterPos]
-    arg = string[(delimiterPos + 1):]
-    if theType == "int":
-        return int(arg)
-    elif theType == "float":
-        return float(arg)
-    elif theType == "str" or theType == "string":
-        return arg
-    elif theType == "boolean":
-        return stringToBool(string)
-    else:
-        raise Exception("Unable to parse string to arg: " + arg)
-
-
-# helper function to convert command line arguments to Ture/False in Python
-def stringToBool(myString):
-    myString = myString.lower()
-    if myString in ("false", "0"):
-        return False
-    else:
-        return True
-
-
 # fName: full path to file to be parsed
 def parse_func_specs(fileName):
     funcs = []
@@ -112,6 +74,7 @@ def parse_func_specs(fileName):
             next_func, is_last = parse_one_func(reader)
             funcs.append(next_func)
     return funcs
+
 
 # helper function that read one function out of spec file
 def parse_one_func(reader):
