@@ -1,110 +1,73 @@
+from traceback import format_exc
 from functools import partial
-from inputGenerator import *
-from fileUtility import *
-import copy
+from copy import deepcopy
+from fileUtility import read_folder
 
-# tests the provided function once
-# inputs:
-# func - <function> function to test
-# stfName - <str> name of student's file
-# solName - <str> name of solution file
-# result:
-# the passed in function object is updated with this test result
-def testFunc(func, stfName, solName):
-    
-    stfName = removeExtension(stfName)
-    solName = removeExtension(stfName)
-    stfFunc = getattr(__import__(stfName), func.name)
-    solFunc = getattr(__import__(solName), func.name)
-    inputs = []
-    inputTypes = func.inputTypes
-    for theType in inputTypes:
-        nextArg = theType.getValue()
-        # if pass by reference, create a copy for two functions
-        try:
-            nextArg1 = nextArg.copy()
-            nextArg2 = nextArg.copy()
-            inputs.append(nextArg.copy())
-        except:
-            nextArg1 = nextArg
-            nextArg2 = nextArg
-            inputs.append(nextArg)
-        stfFunc = partial(stfFunc, nextArg1)
-        solFunc = partial(solFunc, nextArg2)
-        
-    # run both functions
-    keySol = solFunc()
+
+# constants
+SEPERATOR = '-' * 20
+
+
+# test a single arg_set for given function, return test result instance
+def test_one_arg_set(arg_set, stf_func, sol_func):
+    for arg in arg_set:
+        stf_func = partial(stf_func, deepcopy(arg))
+        sol_func = partial(sol_func, deepcopy(arg))
     try:
-        keyStf = stfFunc()
+        stf_return_val = stf_func()
+        exception_str = None
     except:
-        keyStf = None
-        
-    # update test result
-    result = testResult(inputs, keySol, keyStf)
-    func.addResult(result)
+        stf_return_val = None
+        exception_str = format_exc()
+    return ArgSetTestResult(arg_set, sol_func(), stf_return_val, exception_str)
+
+
+def test_func(func, stf, sol_name):
+    sft_func = getattr(__import__(stf.no_ext_file_name), func.name)
+    sol_func = getattr(__import__(sol_name), func.name)
+    func_result = FunctionTestResult(func.name)
+    stf.function_test_results.append(func_result)
+    for arg_set in func.arg_sets:  # set up function calls
+        set_result = test_one_arg_set(arg_set, sft_func, sol_func)
+        func_result.add_set_result(set_result)
+
 
 # test all functions in a file
 # inputs
 # funcs - <[function]> all functions to test
-# stf - <str> name of student's file
 # sol - <str> name of solution file
-def testFile(funcs, stf, sol):
+def test_file(funcs, stf, sol):
     for func in funcs:
-        times = func.testNum
-        for index in range(0, times):
-            print("Testing " + func.name + " " + str(index), flush = True)
-            testFunc(func, stf, sol)
+        test_func(func, stf, sol)
 
-class function:
-    
-    # constructor
-    # inputs:
-    # name - <str> name of function
-    # testNum - <int> number of times to test function
-    # inputTypes - <[argType]> types of input arguments of function
-    # score - <int> points rewarded for correct function
-    def __init__(self, name, testNum, inputTypes, score = 1):
-        self.name = name
-        self.testNum = testNum
-        self.inputTypes = inputTypes
-        self.score = score
-        self.testResults = []
-    
-    # add a new test result to this function
-    def addResult(self, result):
-        self.testResults.append(result)
-    
-    # add a new input argument to this function
-    def addInput(self, arg):
-        self.inputTypes.append(arg)
-    
-    # return string representation of all tests done on this function
-    def allTestsToStr(self):
-        strRep = ""
-        strRep += self.name + "\n"
-        numOfTests = len(self.testResults)
-        strRep += str(numOfTests) + " tests done:\n"
-        for testNum in range(0, numOfTests):
-            strRep += "test #" + str(testNum) + "\n"
-            strRep += str(self.testResults[testNum]) + "\n\n"
-        return strRep
-    
-    # make a copy of this function, excludes test results
-    def copy(self):
-        return function(self.name, self.testNum, self.inputTypes, self.score)
-        
 
-# testResult should alwasy be used with a corresponding function
-class testResult:
+class FunctionTestResult:
+    def __init__(self, function_name):
+        self.function_name = function_name
+        self.arg_set_test_results = []
+
+    def add_set_result(self, result):
+        self.arg_set_test_results.append(result)
+
+    def __str__(self):
+        string = SEPERATOR + ' function: ' + self.function_name
+        string += ' ' + SEPERATOR + '\n'
+        num_tests = str(len(self.arg_set_test_results))
+        string += num_tests + ' cases were tested\n'
+        return string
+
+
+class ArgSetTestResult:
     
     # constructor
     # inputs: inputs used in this test
     # expected: expected results
     # actual: actual results
-    def __init__(self, inputs, expected, actual):
+    def __init__(self, inputs, expected, actual, exception_str):
         self.inputs = inputs
         self.expected = expected
         self.actual = actual
+        self.exception_str = exception_str
         self.isCorrect = expected == actual
     
     # to return a string representation of this test result
@@ -119,16 +82,18 @@ class testResult:
             strRep += "passed"
         else:
             strRep += "failed"
+        if self.exception_str is not None:
+            strRep += "A runtime error occurred with the following message:\n"
+            strRep += self.exception_str
         return strRep
 
-# simple test cases
-#int1 = argType(int, [0, 100])
-#int2 = argType(int, [0, 100])
-#SorH = argType(str, [1, True, "HS"])
-#getLengthFunc = function("getLength", 2, [int1, int2, SorH])
-#allFuncs = [getLengthFunc]
-#stfName = "C:/Users/Rentian Dong/Desktop/CS 1110/Improving Grading Script/testPath/granillovelasqukenneth_47840_4611593_GranilloVelasquezKennethDA2-2"
-#solName = "solution_file"
-#testFile(allFuncs, stfName, solName)
-#print(getLengthFunc.allTestsToStr())
 
+def grade_files(paths, sol, funcs):
+    # get all fileNames to be graded
+    sections = []
+    for path in paths:
+        section = read_folder(path)
+        sections.append(section)
+        for student_file in section.student_files:
+            test_file(funcs, student_file, sol)
+    return sections

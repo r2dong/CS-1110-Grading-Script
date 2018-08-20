@@ -1,77 +1,20 @@
-# This script was originally written by Willem Dejong. Rentian worked on
-# improving style of the code and making a few improvements to functionality.
-
-
-# to record name
 import os
 import re
-import Newtester
-import inputGenerator
+from copy import deepcopy
 import ast
+import csv
+
+# constants
+NUM_PADDING = 5
 
 
-# reads in the list of file/folders in path and make a list of .py files
-def readFolder(path):
-    # creates a list of items in the directory of path
-    fileList = os.listdir(path)
-
-    # removes testing .py codes from fileList, if they are in it
-    if "tester.py" in fileList:
-        fileList.remove("tester.py")
-    if "readclass.py" in fileList:
-        fileList.remove("readclass.py")
-    if "solution.py" in fileList:
-        fileList.remove("solution.py")
-
-    # remove all none py file names from fileList
-    index = 0  # loop index
-    while index < len(fileList):
-        # finds index of last '.' in file names. If no '.', it will be 0 and 
-        # will check against the entire file name and fail. (unlesss it is a
-        # folder named "py", so don't name a folder "py" in this directory.)
-        try:
-            fileExtIndex = fileList[index].rfind(".") + 1
-        except:
-            break
-        # if it does not have a "py" as a the file extention remove from list
-        if fileExtIndex == -1 or fileList[index][fileExtIndex:].lower() != "py":
-            try:
-                fileList.remove(fileList[index])
-            except:
-                print("Failed removing non-py file")
-        else:
-            index += 1
-
-    # make all file names absolute paths
-    absoluteFileList = []
-    for fileName in fileList:
-        absoluteFileList.append(fileName)
-
-    # returns fileList containing only names of .py files
-    return fileList
-
-
-# stfResults is returned by Main.testFile
-# writes at the end of the file
-def writeComments(stfResults):
-    for result in stfResults:
-        absolutePath = result.path + "\\" + result.name
-
-        # debug output
-        print("Writing output to result " + absolutePath, flush=True)
-
-        comments = str(result)
-        comments = toggleComment(comments)
-        stf = open(absolutePath, "a")
-        stf.write("\n" + comments)
-        stf.close()
-
-
-# add "#" to each line of comment
-def toggleComment(comment):
-    comment = "# " + comment
-    comment = comment.replace("\n", "\n# ")
-    return comment
+# reads a folder containing submissions of a single section
+def read_folder(folder_name):
+    file_names = os.listdir(folder_name)
+    section = Section()
+    for file_name in file_names:
+        section.add_file(StudentFile(folder_name, file_name))
+    return section
 
 
 # remove the extension from a string file name
@@ -160,52 +103,116 @@ def stringToBool(myString):
 
 
 # fName: full path to file to be parsed
-def parseFuncSpec(fileName):
+def parse_func_specs(fileName):
     funcs = []
-    file = open(fileName, "r")
-
-    for line in file:
-
-        line = line.replace("\n", "")
-        args = line.split(" ")
-
-        # debug output
-        print("Parsing line: " + line, flush=True)
-
-        # create function
-        if "function" in line:
-            funcName = args[1]
-            numTest = int(args[2])
+    with open(fileName) as file:
+        reader = csv.reader(file, lineterminator='\n')
+        while True:
             try:
-                score = args[3]
-            except:
-                score = 1
-            curFunc = Newtester.function(funcName, numTest, [], score)
-            funcs.append(curFunc)
-        # add inputs for the function
-        else:
-            if args[0] == "fixed":  # case of fixed set input
-                args = args[1:]
-                vals = []
-                for arg in args:
-                    vals.append(ast.literal_eval(arg))
-                # create the inputArg object
-                curInput = inputGenerator.argType(type(args[0]), valSet=vals)
-            # case of random input
-            else:
-                theType = stringToType(args[0])
-                print("parse type " + args[0] + " as " + str(theType))
-                typeArgs = args[1:]
-                argsLength = len(typeArgs)
-                for index in range(0, argsLength):
-                    print("parsing argument: " + typeArgs[index])
-                    typeArgs[index] = stringToArg(typeArgs[index])
-                print("creating new random input with type: " + str(theType) + " and args: " + str(typeArgs),
-                      flush=True)
-                curInput = inputGenerator.argType(theType, typeArgs)
+                funcs.append(parse_one_func(reader))
+            except StopIteration:
+                return funcs
 
-            # append the current input argument to the function
-            curFunc.addInput(curInput)
 
-    file.close()
-    return funcs
+# helper function that read one function out of spec file
+def parse_one_func(reader):
+
+    # meta info of function
+    row = next(reader)
+    name = row[0]
+    try:
+        score = row[1]
+    except IndexError:
+        score = 1
+
+    # all input sets of function
+    arg_sets = []
+    row = next(reader)
+    while len(row) != 0:
+        cur_arg_set = []
+        for arg in row:
+            cur_arg_set.append(ast.literal_eval(arg))
+        arg_sets.append(cur_arg_set)
+        row = next(reader)
+
+    return Func(name, arg_sets, score)
+
+
+class Section:
+    def __init__(self):
+        self.student_files = []
+
+    # add a new StudentFile instance
+    def add_file(self, file):
+        self.student_files.append(file)
+
+    # write test feedback to all student files in this section
+    def write_feedback(self):
+        for student_file in self.student_files:
+            student_file.write_feedback()
+
+
+class StudentFile:
+
+    # constructor
+    # inputs:
+    # funcs - <[function]> functions tested, results added later
+    # name - <str> absolute path to the file
+    def __init__(self, folder_name, file_name):
+        self.path = os.path.join(folder_name, file_name)
+        self.folder_name = folder_name
+        self.full_file_name = file_name
+        self.no_ext_file_name = file_name[:-3]
+        # sys.path.append(folder_name)
+        self.hawk_id = __import__(self.no_ext_file_name).getHawkIDs()
+        self.function_test_results = []
+
+    # append test results as comments at back of file
+    def write_feedback(self):
+        string = ''
+        for func_result in self.function_test_results:
+            string += str(func_result) + '\n'
+            for i in range(0, len(func_result.arg_set_test_results)):
+                string += 'case: ' + str(i) + ':\n'
+                string += str(func_result.arg_set_test_results[i]) + '\n' * 2
+        with open(self.path, 'a') as file:
+            file.write('\n' * NUM_PADDING)
+            file.write((lambda s: '# ' + s.replace("\n", "\n# "))(string))
+
+
+class Func:
+
+    # constructor
+    # inputs:
+    # name - <str> name of function
+    # testNum - <int> number of times to test function
+    # inputTypes - <[argType]> types of input arguments of function
+    # score - <int> points rewarded for correct function
+    def __init__(self, name, arg_sets, score):
+        self.name = name
+        self.arg_sets = arg_sets
+        self.score = score
+        self.testResults = []
+
+    # add a new test result to this function
+    def addResult(self, result):
+        self.testResults.append(result)
+
+    # add a new set of inputs to this function
+    def addInput(self, arg_list):
+        self.arg_sets.append(arg_list)
+
+    # return string representation of all tests done on this function
+    def allTestsToStr(self):
+        strRep = ""
+        strRep += self.name + "\n"
+        numOfTests = len(self.testResults)
+        strRep += str(numOfTests) + " tests done:\n"
+        for testNum in range(0, numOfTests):
+            strRep += "test #" + str(testNum) + "\n"
+            strRep += str(self.testResults[testNum]) + "\n\n"
+        return strRep
+
+    # make a copy of this function, excludes test results
+    def copy(self):
+        return Func(self.name, deepcopy(self.arg_sets), self.score)
