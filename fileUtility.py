@@ -105,19 +105,19 @@ def stringToBool(myString):
 # fName: full path to file to be parsed
 def parse_func_specs(fileName):
     funcs = []
+    is_last = False
     with open(fileName) as file:
-        reader = csv.reader(file, lineterminator='\n')
-        while True:
-            try:
-                funcs.append(parse_one_func(reader))
-            except StopIteration:
-                return funcs
-
+        reader = csv.reader(file)
+        while not is_last:
+            next_func, is_last = parse_one_func(reader)
+            funcs.append(next_func)
+    return funcs
 
 # helper function that read one function out of spec file
 def parse_one_func(reader):
 
     # meta info of function
+    is_last = False
     row = next(reader)
     name = row[0]
     try:
@@ -133,9 +133,13 @@ def parse_one_func(reader):
         for arg in row:
             cur_arg_set.append(ast.literal_eval(arg))
         arg_sets.append(cur_arg_set)
-        row = next(reader)
+        try:
+            row = next(reader)
+        except StopIteration:
+            is_last = True
+            break
 
-    return Func(name, arg_sets, score)
+    return Func(name, arg_sets, score), is_last
 
 
 class Section:
@@ -163,7 +167,6 @@ class StudentFile:
         self.folder_name = folder_name
         self.full_file_name = file_name
         self.no_ext_file_name = file_name[:-3]
-        # sys.path.append(folder_name)
         self.hawk_id = __import__(self.no_ext_file_name).getHawkIDs()
         self.function_test_results = []
 

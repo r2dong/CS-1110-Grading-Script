@@ -5,7 +5,7 @@ from fileUtility import read_folder
 
 
 # constants
-SEPERATOR = '-' * 20
+SEPERATOR = '-' * 15
 
 
 # test a single arg_set for given function, return test result instance
@@ -25,7 +25,7 @@ def test_one_arg_set(arg_set, stf_func, sol_func):
 def test_func(func, stf, sol_name):
     sft_func = getattr(__import__(stf.no_ext_file_name), func.name)
     sol_func = getattr(__import__(sol_name), func.name)
-    func_result = FunctionTestResult(func.name)
+    func_result = FuncTestResult(func.name, func.score)
     stf.function_test_results.append(func_result)
     for arg_set in func.arg_sets:  # set up function calls
         set_result = test_one_arg_set(arg_set, sft_func, sol_func)
@@ -41,17 +41,27 @@ def test_file(funcs, stf, sol):
         test_func(func, stf, sol)
 
 
-class FunctionTestResult:
-    def __init__(self, function_name):
+class FuncTestResult:
+    def __init__(self, function_name, score):
         self.function_name = function_name
+        self.score = score
         self.arg_set_test_results = []
 
     def add_set_result(self, result):
         self.arg_set_test_results.append(result)
 
+    def __calc_score(self):
+        score = self.score
+        for set_result in self.arg_set_test_results:
+            if not set_result.is_correct:
+                score = 0
+                break
+        return score
+
     def __str__(self):
         string = SEPERATOR + ' function: ' + self.function_name
-        string += ' ' + SEPERATOR + '\n'
+        string += ', score: ' + str(self.__calc_score()) \
+                  + '/' + str(self.score) + ' ' + SEPERATOR + '\n'
         num_tests = str(len(self.arg_set_test_results))
         string += num_tests + ' cases were tested\n'
         return string
@@ -68,7 +78,7 @@ class ArgSetTestResult:
         self.expected = expected
         self.actual = actual
         self.exception_str = exception_str
-        self.isCorrect = expected == actual
+        self.is_correct = expected == actual
     
     # to return a string representation of this test result
     def __str__(self):
@@ -78,7 +88,7 @@ class ArgSetTestResult:
         strRep += "Inputs: " + inputStr + "\n"
         strRep += "Expected: " + str(self.expected) + "\n"
         strRep += "Actual: " + str(self.actual) + "\n"
-        if self.isCorrect:
+        if self.is_correct:
             strRep += "passed"
         else:
             strRep += "failed"
