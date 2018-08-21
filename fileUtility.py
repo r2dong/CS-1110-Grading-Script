@@ -4,6 +4,9 @@ import ast
 import csv
 from copy import deepcopy
 from os.path import splitext
+from shutil import copy
+from os.path import basename
+from os import makedirs
 
 # constants
 NUM_PADDING = 5
@@ -126,9 +129,9 @@ class Section:
         self.student_files.append(file)
 
     # write test feedback to all student files in this section
-    def write_feedback(self):
+    def write_feedback(self, out_dir):
         for student_file in self.student_files:
-            student_file.write_feedback()
+            student_file.write_feedback(os.path.join(out_dir, basename(self.folder_name)))
 
     # get a score using hawk id, or return none if id does not exist
     def __score_by_id(self, hawk_id):
@@ -136,11 +139,12 @@ class Section:
             if hawk_id in stf.hawk_id:
                 return stf.calc_score()
 
-    def write_grade_sheet(self, out_file_name):
+    def write_grade_sheet(self, out_dir):
         first_row = GRADE_SHEET_FIRST_ROW + (self.hwid,)
         second_row = ['Points Possible'] + [''] * (NUM_META_ROWS - 1) + \
                      [str(self.total_score)]
         template_file_name = os.path.join(self.folder_name, self.template_name)
+        out_file_name = os.path.join(out_dir, basename(self.folder_name), basename(self.template_name))
         with open(out_file_name, 'w') as out_file, \
                 open(template_file_name, 'r') as template_file:
             writer = csv.writer(out_file, lineterminator='\n')
@@ -173,14 +177,18 @@ class StudentFile:
         self.function_test_results = []
 
     # append test results as comments at back of file
-    def write_feedback(self):
+    def write_feedback(self, out_dir):
         string = ''
         for func_result in self.function_test_results:
             string += str(func_result) + '\n'
             for i in range(0, len(func_result.arg_set_test_results)):
                 string += 'case: ' + str(i) + ':\n'
                 string += str(func_result.arg_set_test_results[i]) + '\n' * 2
-        with open(self.path, 'a') as file:
+        makedirs(out_dir, exist_ok=True)
+        old_file_name = os.path.join(self.folder_name, self.full_file_name)
+        new_file_name = os.path.join(out_dir, self.full_file_name)
+        path = copy(old_file_name, new_file_name)
+        with open(path, 'a') as file:
             file.write('\n' * NUM_PADDING)
             file.write((lambda s: '# ' + s.replace("\n", "\n# "))(string))
 
@@ -190,6 +198,7 @@ class StudentFile:
         for result in self.function_test_results:
             score += result.calc_score()
         return score
+
 
 class Func:
 
