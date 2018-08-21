@@ -32,6 +32,7 @@ def main():
     sections = grade_files(cmdArgs.paths, cmdArgs.hwids, no_ext_sol_name, funcs)  # run all tests
     for section in sections:
         section.write_feedback()
+        section.write_grade_sheet('C:\\Users\\Rentian Dong\\Desktop\\out.csv')
     print(1)
 
 

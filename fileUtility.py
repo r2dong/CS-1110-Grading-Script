@@ -7,12 +7,15 @@ from os.path import splitext
 
 # constants
 NUM_PADDING = 5
+NUM_META_ROWS = 4  # first n columns to copy from template grade sheet
+GRADE_SHEET_FIRST_ROW = 'Student', 'ID', 'SIS Login ID', 'Section'
+HAWK_ID_COL = 2  # column in template with hawkIDs
 
 
 # reads a folder containing submissions of a single section
-def read_folder(folder_name, hwid):
+def read_folder(folder_name, hwid, total_score):
     file_names = os.listdir(folder_name)
-    section = Section(hwid)
+    section = Section(hwid, total_score, folder_name)
     for file_name in file_names:
         _, ext = splitext(file_name)
         if ext == '.csv':
@@ -111,9 +114,12 @@ def parse_one_func(reader):
 
 
 class Section:
-    def __init__(self, hwid):
+    def __init__(self, hwid, total_score, folder_name):
         self.student_files = []
         self.hwid = hwid
+        self.total_score = total_score
+        self.template_name = None
+        self.folder_name = folder_name
 
     # add a new StudentFile instance
     def add_file(self, file):
@@ -124,8 +130,32 @@ class Section:
         for student_file in self.student_files:
             student_file.write_feedback()
 
-    def write_grade_sheet(self):
-        pass
+    # get a score using hawk id, or return none if id does not exist
+    def __score_by_id(self, hawk_id):
+        for stf in self.student_files:
+            if hawk_id in stf.hawk_id:
+                return stf.calc_score()
+
+    def write_grade_sheet(self, out_file_name):
+        first_row = GRADE_SHEET_FIRST_ROW + (self.hwid,)
+        second_row = ['Points Possible'] + [''] * (NUM_META_ROWS - 1) + \
+                     [str(self.total_score)]
+        template_file_name = os.path.join(self.folder_name, self.template_name)
+        with open(out_file_name, 'w') as out_file, \
+                open(template_file_name, 'r') as template_file:
+            writer = csv.writer(out_file, lineterminator='\n')
+            writer.writerow(first_row)
+            writer.writerow(second_row)
+            template_file_reader = csv.reader(template_file)
+            next(template_file_reader)  # skip first two rows of template
+            next(template_file_reader)
+            for row in template_file_reader:
+                hawk_id = row[HAWK_ID_COL]
+                score = self.__score_by_id(hawk_id)
+                row = row[:NUM_META_ROWS]
+                if score is not None:
+                    row += [str(score)]
+                writer.writerow(row)
 
 
 class StudentFile:
@@ -154,6 +184,12 @@ class StudentFile:
             file.write('\n' * NUM_PADDING)
             file.write((lambda s: '# ' + s.replace("\n", "\n# "))(string))
 
+    # calculate the score of this student
+    def calc_score(self):
+        score = 0
+        for result in self.function_test_results:
+            score += result.calc_score()
+        return score
 
 class Func:
 

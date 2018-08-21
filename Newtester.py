@@ -50,7 +50,7 @@ class FuncTestResult:
     def add_set_result(self, result):
         self.arg_set_test_results.append(result)
 
-    def __calc_score(self):
+    def calc_score(self):
         score = self.score
         for set_result in self.arg_set_test_results:
             if not set_result.is_correct:
@@ -60,7 +60,7 @@ class FuncTestResult:
 
     def __str__(self):
         string = SEPERATOR + ' function: ' + self.function_name
-        string += ', score: ' + str(self.__calc_score()) \
+        string += ', score: ' + str(self.calc_score()) \
                   + '/' + str(self.score) + ' ' + SEPERATOR + '\n'
         num_tests = str(len(self.arg_set_test_results))
         string += num_tests + ' cases were tested\n'
@@ -101,8 +101,11 @@ class ArgSetTestResult:
 def grade_files(paths, hwids, sol, funcs):
     # get all fileNames to be graded
     sections = []
+    total_score = 0
+    for func in funcs:
+        total_score += func.score
     for path, hwid in zip(paths, hwids):
-        section = read_folder(path, hwid)
+        section = read_folder(path, hwid, total_score)
         sections.append(section)
         for student_file in section.student_files:
             test_file(funcs, student_file, sol)
