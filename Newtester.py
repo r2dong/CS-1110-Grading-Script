@@ -98,11 +98,11 @@ class ArgSetTestResult:
         return strRep
 
 
-def grade_files(paths, sol, funcs):
+def grade_files(paths, hwids, sol, funcs):
     # get all fileNames to be graded
     sections = []
-    for path in paths:
-        section = read_folder(path)
+    for path, hwid in zip(paths, hwids):
+        section = read_folder(path, hwid)
         sections.append(section)
         for student_file in section.student_files:
             test_file(funcs, student_file, sol)

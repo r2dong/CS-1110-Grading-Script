@@ -1,19 +1,24 @@
 import os
 import re
-from copy import deepcopy
 import ast
 import csv
+from copy import deepcopy
+from os.path import splitext
 
 # constants
 NUM_PADDING = 5
 
 
 # reads a folder containing submissions of a single section
-def read_folder(folder_name):
+def read_folder(folder_name, hwid):
     file_names = os.listdir(folder_name)
-    section = Section()
+    section = Section(hwid)
     for file_name in file_names:
-        section.add_file(StudentFile(folder_name, file_name))
+        _, ext = splitext(file_name)
+        if ext == '.csv':
+            section.template_name = file_name
+        else:
+            section.add_file(StudentFile(folder_name, file_name))
     return section
 
 
@@ -106,8 +111,9 @@ def parse_one_func(reader):
 
 
 class Section:
-    def __init__(self):
+    def __init__(self, hwid):
         self.student_files = []
+        self.hwid = hwid
 
     # add a new StudentFile instance
     def add_file(self, file):
@@ -117,6 +123,9 @@ class Section:
     def write_feedback(self):
         for student_file in self.student_files:
             student_file.write_feedback()
+
+    def write_grade_sheet(self):
+        pass
 
 
 class StudentFile:
