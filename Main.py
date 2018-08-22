@@ -36,6 +36,7 @@ def main():
         section.write_grade_sheet(cmdArgs.out_dir)
 
     print('Grading Finished')
+    sys.exit(0)
 
 
 if __name__ == '__main__':

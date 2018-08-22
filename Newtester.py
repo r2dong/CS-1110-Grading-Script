@@ -2,19 +2,39 @@ from traceback import format_exc
 from functools import partial
 from copy import deepcopy
 from fileUtility import read_folder
+import threading  # to check for possible infinite loops
+from stopit import ThreadingTimeout
+from stopit import async_raise
 
 
 # constants
 SEPERATOR = '-' * 15
+TIMEOUT_SEC = 5
+INFINITE_LOOP_ERR_STR = 'Function not finished within 5 seconds, very likely due to infinite loops\n'
 
 
 # test a single arg_set for given function, return test result instance
+# TODO refactor out testing of inifinite loops
 def test_one_arg_set(arg_set, stf_func, sol_func):
     for arg in arg_set:
         stf_func = partial(stf_func, deepcopy(arg))
         sol_func = partial(sol_func, deepcopy(arg))
     try:
-        stf_return_val = stf_func()
+        stf_thread = threading.Thread(target=stf_func)
+        stf_thread.start()
+        print('thread_started')
+        stf_thread.join(timeout=TIMEOUT_SEC)  # execute for 5 seconds
+        print('thread_joined')
+        if stf_thread.is_alive():  # if execution not finished within 5 seconds, probably infinte loop
+            stf_return_val = None
+            exception_str = INFINITE_LOOP_ERR_STR
+
+            # force terminate the thread
+            thread_id = stf_thread.ident
+            async_raise(thread_id, LookupError)
+
+            return ArgSetTestResult(arg_set, sol_func(), stf_return_val, exception_str)
+        stf_return_val = stf_func()  # handle infinite loops here
         exception_str = None
     except:
         stf_return_val = None
@@ -23,9 +43,16 @@ def test_one_arg_set(arg_set, stf_func, sol_func):
 
 
 def test_func(func, stf, sol_name):
-    sft_func = getattr(__import__(stf.no_ext_file_name), func.name)
+
     sol_func = getattr(__import__(sol_name), func.name)
-    func_result = FuncTestResult(func.name, func.score)
+    try:
+        sft_func = getattr(__import__(stf.no_ext_file_name), func.name)
+    except:
+        func_result = FuncTestResult(func.name, func.score, format_exc())
+        stf.function_test_results.append(func_result)
+        return
+
+    func_result = FuncTestResult(func.name, func.score, None)
     stf.function_test_results.append(func_result)
     for arg_set in func.arg_sets:  # set up function calls
         set_result = test_one_arg_set(arg_set, sft_func, sol_func)
@@ -36,16 +63,17 @@ def test_func(func, stf, sol_name):
 # inputs
 # funcs - <[function]> all functions to test
 # sol - <str> name of solution file
-def test_file(funcs, stf, sol):
+def test_file(funcs, stf, sol_name):
     for func in funcs:
-        test_func(func, stf, sol)
+        test_func(func, stf, sol_name)
 
 
 class FuncTestResult:
-    def __init__(self, function_name, score):
+    def __init__(self, function_name, score, exc_str):
         self.function_name = function_name
         self.score = score
         self.arg_set_test_results = []
+        self.exc_str = exc_str
 
     def add_set_result(self, result):
         self.arg_set_test_results.append(result)
@@ -59,11 +87,17 @@ class FuncTestResult:
         return score
 
     def __str__(self):
-        string = SEPERATOR + ' function: ' + self.function_name
-        string += ', score: ' + str(self.calc_score()) \
-                  + '/' + str(self.score) + ' ' + SEPERATOR + '\n'
-        num_tests = str(len(self.arg_set_test_results))
-        string += num_tests + ' cases were tested\n'
+        if self.exc_str is not None:
+            string = SEPERATOR + ' function: ' + self.function_name
+            string += ', score: ' + '0' \
+                      + '/' + str(self.score) + ' ' + SEPERATOR + '\n'
+            string += self.exc_str
+        else:
+            string = SEPERATOR + ' function: ' + self.function_name
+            string += ', score: ' + str(self.calc_score()) \
+                      + '/' + str(self.score) + ' ' + SEPERATOR + '\n'
+            num_tests = str(len(self.arg_set_test_results))
+            string += num_tests + ' cases were tested\n'
         return string
 
 

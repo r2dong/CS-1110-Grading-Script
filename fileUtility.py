@@ -1,5 +1,4 @@
 import os
-import re
 import ast
 import csv
 from traceback import format_exc
@@ -146,18 +145,19 @@ class StudentFile:
         self.no_ext_file_name = file_name[:-3]
         self.hawk_id_err_str = None
         self.hawk_id_err = None
+        self.function_test_results = []
+
         try:
             self.hawk_id = __import__(self.no_ext_file_name).getHawkIDs()[0]
         except:
             self.hawk_id = None
             err_str = format_exc()
-            print(repr(err_str))
+            # TODO the exception from student file not always the last line
             err_str = err_str[err_str.rfind('\n', 0, len(err_str) - 1) + 1:]
             self.hawk_id_err_str = err_str
 
         if self.hawk_id not in valid_ids:
             self.hawk_id_err = True
-        self.function_test_results = []
 
     # append test results as comments at back of file
     def write_test_results(self, out_dir):
