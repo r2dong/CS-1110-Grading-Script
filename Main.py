@@ -32,9 +32,10 @@ def main():
     no_ext_sol_name = basename(cmdArgs.sol)[:-3]
     sections = grade_files(cmdArgs.paths, cmdArgs.hwids, no_ext_sol_name, funcs)  # run all tests
     for section in sections:
-        section.write_feedback('C:\\Users\\Rentian Dong\\Desktop\\test_out_dir')
-        section.write_grade_sheet('C:\\Users\\Rentian Dong\\Desktop\\test_out_dir')
-    print(1)
+        section.write_test_results(cmdArgs.out_dir)
+        section.write_grade_sheet(cmdArgs.out_dir)
+
+    print('Grading Finished')
 
 
 if __name__ == '__main__':

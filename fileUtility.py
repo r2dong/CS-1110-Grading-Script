@@ -2,6 +2,7 @@ import os
 import re
 import ast
 import csv
+from traceback import format_exc
 from copy import deepcopy
 from os.path import splitext
 from shutil import copy
@@ -26,53 +27,6 @@ def read_folder(folder_name, hwid, total_score):
         else:
             section.add_file(StudentFile(folder_name, file_name))
     return section
-
-
-# remove the extension from a string file name
-def removeExtension(fileName):
-    extLoc = fileName.rfind(".")
-    if extLoc == -1:
-        # do nothing if file name has no extension
-        return fileName
-    else:
-        return fileName[:extLoc]
-
-
-# turn a csv into a matrix (list of list)
-def csvToMatrix(csvFileName):
-    file = open(csvFileName, "r")
-    matrix = []
-    for line in file:
-        line = line.replace("\n", "")
-        row = re.split(",", line)
-        matrix.append(row)
-    file.close()
-    return matrix
-
-
-# write a matrix into CSV file
-def matrixToCsv(matrix, outFileName):
-    strToWrite = ""
-    for row in matrix:
-        for element in row:
-            strToWrite += str(element) + ","
-        strToWrite += "\n"
-    file = open(outFileName, "w")
-    file.write(strToWrite)
-    file.close()
-
-
-# find column number of the specified header
-def findColumn(matrix, colHeader):
-    firstRow = matrix[0]
-    col = 0
-    for header in firstRow:
-        if header == colHeader:
-            return col
-        else:
-            col += 1
-    # in case colHeader does not exist
-    return -1
 
 
 # fName: full path to file to be parsed
@@ -129,9 +83,9 @@ class Section:
         self.student_files.append(file)
 
     # write test feedback to all student files in this section
-    def write_feedback(self, out_dir):
+    def write_test_results(self, out_dir):
         for student_file in self.student_files:
-            student_file.write_feedback(os.path.join(out_dir, basename(self.folder_name)))
+            student_file.write_test_results(os.path.join(out_dir, basename(self.folder_name)))
 
     # get a score using hawk id, or return none if id does not exist
     def __score_by_id(self, hawk_id):
@@ -173,11 +127,14 @@ class StudentFile:
         self.folder_name = folder_name
         self.full_file_name = file_name
         self.no_ext_file_name = file_name[:-3]
-        self.hawk_id = __import__(self.no_ext_file_name).getHawkIDs()
+        try:
+            self.hawk_id = __import__(self.no_ext_file_name).getHawkIDs()
+        except:
+            self.hawk_id = None
         self.function_test_results = []
 
     # append test results as comments at back of file
-    def write_feedback(self, out_dir):
+    def write_test_results(self, out_dir):
         string = ''
         for func_result in self.function_test_results:
             string += str(func_result) + '\n'
