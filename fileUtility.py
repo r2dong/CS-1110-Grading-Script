@@ -16,6 +16,15 @@ GRADE_SHEET_FIRST_ROW = 'Student', 'ID', 'SIS Login ID', 'Section'
 HAWK_ID_COL = 2  # column in template with hawkIDs
 
 
+# find all valid hawk_ids from a grade sheet
+def get_all_hawk_ids(grade_sheet_file_name):
+    with open(grade_sheet_file_name) as file:
+        reader = csv.reader(file)
+        next(reader)
+        next(reader)
+        return [row[HAWK_ID_COL] for row in reader]
+
+
 # reads a folder containing submissions of a single section
 def read_folder(folder_name, hwid, total_score):
     file_names = os.listdir(folder_name)
@@ -23,9 +32,15 @@ def read_folder(folder_name, hwid, total_score):
     for file_name in file_names:
         _, ext = splitext(file_name)
         if ext == '.csv':
+            file_name = os.path.join(folder_name, file_name)
+            valid_hawk_ids = get_all_hawk_ids(file_name)
+            break
+    for file_name in file_names:
+        _, ext = splitext(file_name)
+        if ext == '.csv':
             section.template_name = file_name
         else:
-            section.add_file(StudentFile(folder_name, file_name))
+            section.add_file(StudentFile(folder_name, file_name, valid_hawk_ids))
     return section
 
 
@@ -90,7 +105,7 @@ class Section:
     # get a score using hawk id, or return none if id does not exist
     def __score_by_id(self, hawk_id):
         for stf in self.student_files:
-            if hawk_id in stf.hawk_id:
+            if hawk_id == stf.hawk_id:
                 return stf.calc_score()
 
     def write_grade_sheet(self, out_dir):
@@ -107,6 +122,7 @@ class Section:
             template_file_reader = csv.reader(template_file)
             next(template_file_reader)  # skip first two rows of template
             next(template_file_reader)
+
             for row in template_file_reader:
                 hawk_id = row[HAWK_ID_COL]
                 score = self.__score_by_id(hawk_id)
@@ -122,20 +138,36 @@ class StudentFile:
     # inputs:
     # funcs - <[function]> functions tested, results added later
     # name - <str> absolute path to the file
-    def __init__(self, folder_name, file_name):
+    # TODO refactor out handling incorrect getHawkIDs function
+    def __init__(self, folder_name, file_name, valid_ids):
         self.path = os.path.join(folder_name, file_name)
         self.folder_name = folder_name
         self.full_file_name = file_name
         self.no_ext_file_name = file_name[:-3]
+        self.hawk_id_err_str = None
+        self.hawk_id_err = None
         try:
-            self.hawk_id = __import__(self.no_ext_file_name).getHawkIDs()
+            self.hawk_id = __import__(self.no_ext_file_name).getHawkIDs()[0]
         except:
             self.hawk_id = None
+            err_str = format_exc()
+            print(repr(err_str))
+            err_str = err_str[err_str.rfind('\n', 0, len(err_str) - 1) + 1:]
+            self.hawk_id_err_str = err_str
+
+        if self.hawk_id not in valid_ids:
+            self.hawk_id_err = True
         self.function_test_results = []
 
     # append test results as comments at back of file
     def write_test_results(self, out_dir):
         string = ''
+        if self.hawk_id_err_str is not None:
+            string += 'something wrong happend when reading your getHawkIDs function:\n'
+            string += self.hawk_id_err_str + '\n'
+        elif self.hawk_id_err:
+            string += 'could not find a match for the hawk id you returned in getHawkIDs function\n'
+            string += 'please double check you spelled it right\n'
         for func_result in self.function_test_results:
             string += str(func_result) + '\n'
             for i in range(0, len(func_result.arg_set_test_results)):
