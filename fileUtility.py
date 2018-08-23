@@ -2,7 +2,6 @@ import os
 import ast
 import csv
 from traceback import format_exc
-from copy import deepcopy
 from os.path import splitext
 from shutil import copy
 from os.path import basename
@@ -202,26 +201,3 @@ class Func:
         self.arg_sets = arg_sets
         self.score = score
         self.testResults = []
-
-    # add a new test result to this function
-    def addResult(self, result):
-        self.testResults.append(result)
-
-    # add a new set of inputs to this function
-    def addInput(self, arg_list):
-        self.arg_sets.append(arg_list)
-
-    # return string representation of all tests done on this function
-    def allTestsToStr(self):
-        strRep = ""
-        strRep += self.name + "\n"
-        numOfTests = len(self.testResults)
-        strRep += str(numOfTests) + " tests done:\n"
-        for testNum in range(0, numOfTests):
-            strRep += "test #" + str(testNum) + "\n"
-            strRep += str(self.testResults[testNum]) + "\n\n"
-        return strRep
-
-    # make a copy of this function, excludes test results
-    def copy(self):
-        return Func(self.name, deepcopy(self.arg_sets), self.score)

@@ -2,15 +2,14 @@ from traceback import format_exc
 from functools import partial
 from copy import deepcopy
 from fileUtility import read_folder
-import threading  # to check for possible infinite loops
 from stopit import ThreadingTimeout
-from stopit import async_raise
 
 
 # constants
 SEPERATOR = '-' * 15
 TIMEOUT_SEC = 5
 INFINITE_LOOP_ERR_STR = 'Function not finished within 5 seconds, very likely due to infinite loops\n'
+# end of constants
 
 
 # test a single arg_set for given function, return test result instance
@@ -20,26 +19,12 @@ def test_one_arg_set(arg_set, stf_func, sol_func):
         stf_func = partial(stf_func, deepcopy(arg))
         sol_func = partial(sol_func, deepcopy(arg))
     with ThreadingTimeout(TIMEOUT_SEC) as time_out_ctx:
+        # noinspection PyBroadException
         try:
-            # stf_thread = threading.Thread(target=stf_func)
-            # stf_thread.start()
-            # print('thread_started')
-            # stf_thread.join(timeout=TIMEOUT_SEC)  # execute for 5 seconds
-            # print('thread_joined')
             stf_return_val = stf_func()
-
-        except:
+        except Exception:
             exception_str = format_exc()
             return ArgSetTestResult(arg_set, sol_func(), None, exception_str)
-    # if stf_thread.is_alive():  # if execution not finished within 5 seconds, probably infinte loop
-    #     stf_return_val = None
-    #     exception_str = INFINITE_LOOP_ERR_STR
-    #
-    #     # force terminate the thread
-    #     thread_id = stf_thread.ident
-    #     async_raise(thread_id, LookupError)
-    #
-    #     return ArgSetTestResult(arg_set, sol_func(), stf_return_val, exception_str)
     if time_out_ctx.state == time_out_ctx.TIMED_OUT:
         exception_str = INFINITE_LOOP_ERR_STR
     else:
