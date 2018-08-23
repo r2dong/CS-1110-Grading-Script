@@ -19,26 +19,31 @@ def test_one_arg_set(arg_set, stf_func, sol_func):
     for arg in arg_set:
         stf_func = partial(stf_func, deepcopy(arg))
         sol_func = partial(sol_func, deepcopy(arg))
-    try:
-        stf_thread = threading.Thread(target=stf_func)
-        stf_thread.start()
-        print('thread_started')
-        stf_thread.join(timeout=TIMEOUT_SEC)  # execute for 5 seconds
-        print('thread_joined')
-        if stf_thread.is_alive():  # if execution not finished within 5 seconds, probably infinte loop
-            stf_return_val = None
-            exception_str = INFINITE_LOOP_ERR_STR
+    with ThreadingTimeout(TIMEOUT_SEC) as time_out_ctx:
+        try:
+            # stf_thread = threading.Thread(target=stf_func)
+            # stf_thread.start()
+            # print('thread_started')
+            # stf_thread.join(timeout=TIMEOUT_SEC)  # execute for 5 seconds
+            # print('thread_joined')
+            stf_return_val = stf_func()
 
-            # force terminate the thread
-            thread_id = stf_thread.ident
-            async_raise(thread_id, LookupError)
-
-            return ArgSetTestResult(arg_set, sol_func(), stf_return_val, exception_str)
-        stf_return_val = stf_func()  # handle infinite loops here
+        except:
+            exception_str = format_exc()
+            return ArgSetTestResult(arg_set, sol_func(), None, exception_str)
+    # if stf_thread.is_alive():  # if execution not finished within 5 seconds, probably infinte loop
+    #     stf_return_val = None
+    #     exception_str = INFINITE_LOOP_ERR_STR
+    #
+    #     # force terminate the thread
+    #     thread_id = stf_thread.ident
+    #     async_raise(thread_id, LookupError)
+    #
+    #     return ArgSetTestResult(arg_set, sol_func(), stf_return_val, exception_str)
+    if time_out_ctx.state == time_out_ctx.TIMED_OUT:
+        exception_str = INFINITE_LOOP_ERR_STR
+    else:
         exception_str = None
-    except:
-        stf_return_val = None
-        exception_str = format_exc()
     return ArgSetTestResult(arg_set, sol_func(), stf_return_val, exception_str)
 
 
