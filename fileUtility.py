@@ -6,6 +6,8 @@ from os.path import splitext
 from shutil import copy
 from os.path import basename
 from os import makedirs
+from Newtester import test_func
+from Newtester import Func
 
 # constants
 NUM_PADDING = 5
@@ -24,9 +26,9 @@ def get_all_hawk_ids(grade_sheet_file_name):
 
 
 # reads a folder containing submissions of a single section
-def read_folder(folder_name, hwid, total_score):
+def read_folder(folder_name):
     file_names = os.listdir(folder_name)
-    section = Section(hwid, total_score, folder_name)
+    section = Section(folder_name)
     for file_name in file_names:
         _, ext = splitext(file_name)
         if ext == '.csv':
@@ -84,12 +86,17 @@ def parse_one_func(reader):
 
 
 class Section:
-    def __init__(self, hwid, total_score, folder_name):
+
+    def __init__(self, folder_name):
         self.student_files = []
-        self.hwid = hwid
-        self.total_score = total_score
         self.template_name = None
         self.folder_name = folder_name
+
+    def grade_section(self, sol_fname, funcs):
+        for stf in self.student_files:
+            for func in funcs:
+                test_func(func, stf, sol_fname)
+
 
     # add a new StudentFile instance
     def add_file(self, file):
@@ -100,16 +107,28 @@ class Section:
         for student_file in self.student_files:
             student_file.write_test_results(os.path.join(out_dir, basename(self.folder_name)))
 
+    def __get_total_score(self, hwid):
+        full_path = os.path.join(self.folder_name, self.template_name)
+        with open(full_path) as file:
+            reader = csv.reader(file)
+            first_row = next(reader)
+            for i in range(0, len(first_row)):
+                if first_row[i] == hwid:
+                    score_col = i
+            score_row = next(reader)
+            return score_row[score_col]
+
     # get a score using hawk id, or return none if id does not exist
     def __score_by_id(self, hawk_id):
         for stf in self.student_files:
             if hawk_id == stf.hawk_id:
                 return stf.calc_score()
 
-    def write_grade_sheet(self, out_dir):
-        first_row = GRADE_SHEET_FIRST_ROW + (self.hwid,)
+    def write_grade_sheet(self, out_dir, hwid):
+        first_row = GRADE_SHEET_FIRST_ROW + (hwid,)
+        total_score = self.__get_total_score(hwid)
         second_row = ['Points Possible'] + [''] * (NUM_META_ROWS - 1) + \
-                     [str(self.total_score)]
+                     [str(total_score)]
         template_file_name = os.path.join(self.folder_name, self.template_name)
         out_file_name = os.path.join(out_dir, basename(self.folder_name), basename(self.template_name))
         with open(out_file_name, 'w') as out_file, \
@@ -188,16 +207,4 @@ class StudentFile:
         return score
 
 
-class Func:
 
-    # constructor
-    # inputs:
-    # name - <str> name of function
-    # testNum - <int> number of times to test function
-    # inputTypes - <[argType]> types of input arguments of function
-    # score - <int> points rewarded for correct function
-    def __init__(self, name, arg_sets, score):
-        self.name = name
-        self.arg_sets = arg_sets
-        self.score = score
-        self.testResults = []

@@ -1,35 +1,48 @@
 from traceback import format_exc
 from functools import partial
 from copy import deepcopy
-from fileUtility import read_folder
 from stopit import ThreadingTimeout
+import stopit
 
 
 # constants
 SEPERATOR = '-' * 15
 TIMEOUT_SEC = 5
-INFINITE_LOOP_ERR_STR = 'Function not finished within 5 seconds, very likely due to infinite loops\n'
-# end of constants
+INFINITE_LOOP_STR = 'Function not finished within 5 seconds, ' \
+                    'very likely due to infinite loops\n'
+FUNC_TEST_HEADER = '-' * 15 + ' function: %s, score: %d \
+                      /%d' + '-' * 15 + '\n'
+
+
+def run_with_timeout(func):
+    with ThreadingTimeout(TIMEOUT_SEC):
+        exc_str = None
+        return_val = None
+        time_out = False
+        # noinspection PyBroadException
+        try:
+            return_val = func()
+        except stopit.utils.TimeoutException:
+            time_out = True
+        except Exception:
+            exc_str = format_exc()
+    return time_out, return_val, exc_str
 
 
 # test a single arg_set for given function, return test result instance
-# TODO refactor out testing of inifinite loops
 def test_one_arg_set(arg_set, stf_func, sol_func):
     for arg in arg_set:
         stf_func = partial(stf_func, deepcopy(arg))
         sol_func = partial(sol_func, deepcopy(arg))
-    with ThreadingTimeout(TIMEOUT_SEC) as time_out_ctx:
-        # noinspection PyBroadException
-        try:
-            stf_return_val = stf_func()
-        except Exception:
-            exception_str = format_exc()
-            return ArgSetTestResult(arg_set, sol_func(), None, exception_str)
-    if time_out_ctx.state == time_out_ctx.TIMED_OUT:
-        exception_str = INFINITE_LOOP_ERR_STR
+    is_timeout, return_val, exc_str = run_with_timeout(stf_func)
+    answer_key = sol_func()
+    ArgSet_partial = partial(ArgSetTestResult, arg_set, answer_key)
+    if is_timeout:
+        return ArgSet_partial(None, INFINITE_LOOP_STR)
+    elif exc_str:
+        return ArgSet_partial(None, exc_str)
     else:
-        exception_str = None
-    return ArgSetTestResult(arg_set, sol_func(), stf_return_val, exception_str)
+        return ArgSet_partial(return_val, None)
 
 
 def test_func(func, stf, sol_name):
@@ -47,15 +60,6 @@ def test_func(func, stf, sol_name):
     for arg_set in func.arg_sets:  # set up function calls
         set_result = test_one_arg_set(arg_set, sft_func, sol_func)
         func_result.add_set_result(set_result)
-
-
-# test all functions in a file
-# inputs
-# funcs - <[function]> all functions to test
-# sol - <str> name of solution file
-def test_file(funcs, stf, sol_name):
-    for func in funcs:
-        test_func(func, stf, sol_name)
 
 
 class FuncTestResult:
@@ -77,18 +81,16 @@ class FuncTestResult:
         return score
 
     def __str__(self):
+
         if self.exc_str is not None:
-            string = SEPERATOR + ' function: ' + self.function_name
-            string += ', score: ' + '0' \
-                      + '/' + str(self.score) + ' ' + SEPERATOR + '\n'
-            string += self.exc_str
+            score_recieved = 0
+            body = self.exc_str
         else:
-            string = SEPERATOR + ' function: ' + self.function_name
-            string += ', score: ' + str(self.calc_score()) \
-                      + '/' + str(self.score) + ' ' + SEPERATOR + '\n'
+            score_recieved = self.score
             num_tests = str(len(self.arg_set_test_results))
-            string += num_tests + ' cases were tested\n'
-        return string
+            body = num_tests + ' cases were tested\n'
+        header = FUNC_TEST_HEADER % (self.function_name, score_recieved, self.score)
+        return header + body
 
 
 class ArgSetTestResult:
@@ -122,15 +124,20 @@ class ArgSetTestResult:
         return strRep
 
 
-def grade_files(paths, hwids, sol, funcs):
-    # get all fileNames to be graded
-    sections = []
-    total_score = 0
-    for func in funcs:
-        total_score += func.score
-    for path, hwid in zip(paths, hwids):
-        section = read_folder(path, hwid, total_score)
-        sections.append(section)
-        for student_file in section.student_files:
-            test_file(funcs, student_file, sol)
-    return sections
+def grade_section(sol_fname, funcs, section):
+    for stf in section.student_files:
+        for func in funcs:
+            test_func(func, stf, sol_fname)
+
+
+class Func:
+
+    # constructor
+    # inputs:
+    # name - <str> name of function
+    # score - <int> points rewarded for correct function
+    def __init__(self, name, arg_sets, score):
+        self.name = name
+        self.arg_sets = arg_sets
+        self.score = score
+        self.testResults = []

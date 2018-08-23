@@ -3,7 +3,7 @@ import argparse
 import sys
 from os.path import dirname
 from os.path import basename
-from Newtester import grade_files
+import Newtester
 
 
 def main():
@@ -28,15 +28,15 @@ def main():
     for path in cmdArgs.paths:
         sys.path.append(path)
     sys.path.append(dirname(cmdArgs.sol))
+    cmdArgs.sol = basename(cmdArgs.sol)[:-3]
 
-    no_ext_sol_name = basename(cmdArgs.sol)[:-3]
-    sections = grade_files(cmdArgs.paths, cmdArgs.hwids, no_ext_sol_name, funcs)  # run all tests
-    for section in sections:
-        section.write_test_results(cmdArgs.out_dir)
-        section.write_grade_sheet(cmdArgs.out_dir)
+    for path, hwid in zip(cmdArgs.paths, cmdArgs.hwids):
+        section = fileUtility.read_folder(path)
+        section.grade_section(cmdArgs.sol, funcs)
+        section.write_test_results(cmdArgs.out_dir, )
+        section.write_grade_sheet(cmdArgs.out_dir, hwid)
 
     print('Grading Finished')
-    sys.exit(0)
 
 
 if __name__ == '__main__':
