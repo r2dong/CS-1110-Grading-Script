@@ -4,7 +4,6 @@ from copy import deepcopy
 from stopit import ThreadingTimeout
 import stopit
 
-
 # constants
 SEPERATOR = '-' * 15
 TIMEOUT_SEC = 5
@@ -12,6 +11,7 @@ INFINITE_LOOP_STR = 'Function not finished within 5 seconds, ' \
                     'very likely due to infinite loops\n'
 FUNC_TEST_HEADER = '-' * 15 + ' function: %s, score: %d \
                       /%d' + '-' * 15 + '\n'
+RUN_TIME_ERR_STR = 'An error ocurred during excuting of your function\n'
 
 
 def run_with_timeout(func):
@@ -48,9 +48,10 @@ def test_one_arg_set(arg_set, stf_func, sol_func):
 def test_func(func, stf, sol_name):
 
     sol_func = getattr(__import__(sol_name), func.name)
+    # noinspection PyBroadException
     try:
         sft_func = getattr(__import__(stf.no_ext_file_name), func.name)
-    except:
+    except Exception:
         func_result = FuncTestResult(func.name, func.score, format_exc())
         stf.function_test_results.append(func_result)
         return
@@ -84,7 +85,7 @@ class FuncTestResult:
 
         if self.exc_str is not None:
             score_recieved = 0
-            body = self.exc_str
+            body = RUN_TIME_ERR_STR
         else:
             score_recieved = self.score
             num_tests = str(len(self.arg_set_test_results))

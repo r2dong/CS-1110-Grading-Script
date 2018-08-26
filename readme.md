@@ -6,7 +6,18 @@ Correctness of functions are determined by comparing return value with either a 
 
 If a correct implementation is available, all input parameters of a function are specified, and the program generates according random values as inputs. It then checks if the function being tested and the correct implementation share the same return value.
 
+<<<<<<< HEAD
 A GUI is being developed currently, and a more detailed description on usage will be provided once everything is integrated and packaged.
 
 ### Motivation
 Previously a script was developed for grading homework for a introductory level python course. The script hard-coded function calls to both submissions and the solution, as well as writting output to submission source files. As a result, the script needs to be re-written for each homework, which was error-prone and time-consuming: for exmaple, it is very easy to mess up building the strings to be re-written, and submitted files sometime modify input through references, in which case the script mistakenly marks points off the submission. 
+=======
+A GUI is being developed currently, and a more detailed description will be provided once everything is integrated and packaged.
+
+All edge cases handled
+- syntax errors in file
+- infinte loops
+- incorrect function names/(or they did not bother writing the function at all)
+- incorrect function signature (i.e., incorrect number of input args)
+- runtime errors
+>>>>>>> f504fbf... print preset strings for runtime err
