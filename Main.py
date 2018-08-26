@@ -35,7 +35,7 @@ def main():
     for path, hwid in zip(cmdArgs.paths, cmdArgs.hwids):
         section = fileUtility.read_folder(path)
         section.grade_section(cmdArgs.sol, funcs)
-        section.write_test_results(cmdArgs.out_dir, )
+        section.write_test_results(cmdArgs.out_dir)
         section.write_grade_sheet(cmdArgs.out_dir, hwid)
 
     print('Grading Finished')

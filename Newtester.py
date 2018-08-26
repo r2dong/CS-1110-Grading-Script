@@ -18,9 +18,9 @@ RUN_TIME_ERR_STR = 'An error ocurred during excuting of your function\n'
 
 def run_with_timeout(func):
     """
-
-    :param func:
-    :return:
+    execute a fully curried function under prescribed time out
+    :param func: fully curried partial instance
+    :return: return value of the function, or none if it times out
     """
     with ThreadingTimeout(TIMEOUT_SEC):
         exc_str = None
@@ -39,11 +39,11 @@ def run_with_timeout(func):
 # test a single arg_set for given function, return test result instance
 def test_one_arg_set(arg_set, stf_func, sol_func):
     """
-
-    :param arg_set:
-    :param stf_func:
-    :param sol_func:
-    :return:
+    execute a single test case
+    :param arg_set: list of arguments
+    :param stf_func: function from student submission
+    :param sol_func: function from solution file
+    :return: an ArgSetTestResult instance
     """
     for arg in arg_set:
         stf_func = partial(stf_func, deepcopy(arg))
@@ -61,11 +61,10 @@ def test_one_arg_set(arg_set, stf_func, sol_func):
 
 def test_func(func, stf, sol_name):
     """
-
-    :param func:
-    :param stf:
-    :param sol_name:
-    :return:
+    test a given function for all test cases
+    :param func: a Func instance
+    :param stf: a StudentFile instance
+    :param sol_name: path to solution file
     """
     sol_func = getattr(__import__(sol_name), func.name)
     # noinspection PyBroadException
@@ -95,15 +94,16 @@ class FuncTestResult:
 
     def add_set_result(self, result):
         """
-
-        :param result:
+        add a new ArgSetTestResult instance
+        :param result: ArgSetTestResult instance to be added
         """
         self.arg_set_test_results.append(result)
 
     def calc_score(self):
         """
-
-        :return:
+        calculate the score should be given for all test cases of this function
+        all or nothing
+        :return: the deserved score
         """
         score = self.score
         for set_result in self.arg_set_test_results:
@@ -160,10 +160,10 @@ class ArgSetTestResult:
 
 def grade_section(sol_fname, funcs, section):
     """
-
-    :param sol_fname:
-    :param funcs:
-    :param section:
+    grade all student files of a section
+    :param sol_fname: path to solution file
+    :param funcs: functions to be tested
+    :param section: a section instance to be graded
     """
     for stf in section.student_files:
         for func in funcs:

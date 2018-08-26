@@ -1,7 +1,9 @@
-""" this file contains functions to read functions specs, student files, and write grading output to file """
+"""
+this file contains functions to read functions specs,
+student files, and write grading output to file
+"""
 
 import os
-import ast
 import csv
 from traceback import format_exc
 from os.path import splitext
@@ -10,27 +12,31 @@ from os.path import basename
 from os import makedirs
 from Newtester import test_func
 from Newtester import Func
+from itertools import islice
+from ast import literal_eval
 
 # constants
 NUM_PADDING = 5
 NUM_META_ROWS = 4  # first n columns to copy from template grade sheet
 GRADE_SHEET_FIRST_ROW = 'Student', 'ID', 'SIS Login ID', 'Section'
 HAWK_ID_COL = 2  # column in template with hawkIDs
+HAWK_ID_EXC_STR = 'something wrong happend when reading your getHawkIDs function:\n'
+HAWK_ID_NON_EXIST_STR = 'could not find a match for the hawk id you returned in getHawkIDs function\n \
+                         please double check you spelled it right\n'
 
 
-def get_all_hawk_ids(grade_sheet_file_name):
+def get_hawk_ids(grade_sheet_file_name):
     """
     find all valid hawk_ids from a grade sheet
     :param grade_sheet_file_name: path to a grade sheet
     :return: a list of strings, with all hawk ids from the given grade sheet
     """
     with open(grade_sheet_file_name) as file:
-        reader = csv.reader(file)
-        next(reader)
-        next(reader)
+        reader = islice(csv.reader(file), 2)
         return [row[HAWK_ID_COL] for row in reader]
 
 
+# noinspection PyShadowingNames
 def read_folder(folder_name):
     """
     reads a folder containing submissions of a single section
@@ -38,23 +44,17 @@ def read_folder(folder_name):
     :return: a Section instance
     """
 
-    file_names = os.listdir(folder_name)
-    section = Section(folder_name)
+    # deal with grade sheet
+    fnms = os.listdir(folder_name)  # file names
+    path = list(filter(lambda fn: splitext(fn)[1] == '.csv', fnms))[0]
+    path = os.path.join(folder_name, path)
+    section = Section(folder_name, path)
+    valid_hawk_ids = get_hawk_ids(path)
 
-    for file_name in file_names:
-        _, ext = splitext(file_name)
-        if ext == '.csv':
-            file_name = os.path.join(folder_name, file_name)
-            valid_hawk_ids = get_all_hawk_ids(file_name)
-            break
-
-    for file_name in file_names:
-        _, ext = splitext(file_name)
-        if ext == '.csv':
-            section.template_name = file_name
-        else:
-            # noinspection PyUnboundLocalVariable
-            section.add_file(StudentFile(folder_name, file_name, valid_hawk_ids))
+    # deal with all student submission files
+    stfnms = list(filter(lambda fn: splitext(fn)[1] != '.csv', fnms))
+    for fn in stfnms:
+        section.add_file(StudentFile(folder_name, fn, valid_hawk_ids))
 
     return section
 
@@ -95,10 +95,7 @@ def parse_one_func(reader):
     arg_sets = []
     row = next(reader)
     while len(row) != 0:
-        cur_arg_set = []
-        for arg in row:
-            cur_arg_set.append(ast.literal_eval(arg))
-        arg_sets.append(cur_arg_set)
+        arg_sets.append([literal_eval(arg) for arg in row])
         try:
             row = next(reader)
         except StopIteration:
@@ -111,9 +108,9 @@ def parse_one_func(reader):
 class Section:
     """ instance representing all submissions of a single section """
 
-    def __init__(self, folder_name):
+    def __init__(self, folder_name, grade_sheet_name):
         self.student_files = []
-        self.template_name = None
+        self.grade_sheet_name = grade_sheet_name
         self.folder_name = folder_name
 
     def grade_section(self, sol_fname, funcs):
@@ -138,20 +135,17 @@ class Section:
         write test feedback to all student files in this section
         :param out_dir: destination directory to place the new files
         """
+        os.chdir(out_dir)
         for student_file in self.student_files:
-            student_file.write_test_results(os.path.join(out_dir, basename(self.folder_name)))
+            student_file.write_test_results(basename(self.folder_name))
 
     def __get_total_score(self, hwid):
-        full_path = os.path.join(self.folder_name, self.template_name)
+        full_path = os.path.join(self.folder_name, self.grade_sheet_name)
         with open(full_path) as file:
             reader = csv.reader(file)
             first_row = next(reader)
-            for i in range(0, len(first_row)):
-                if first_row[i] == hwid:
-                    score_col = i
             score_row = next(reader)
-            # noinspection PyUnboundLocalVariable
-            return score_row[score_col]
+            return score_row[first_row.index(hwid)]
 
     # get a score using hawk id, or return none if id does not exist
     def __score_by_id(self, hawk_id):
@@ -164,22 +158,19 @@ class Section:
 
         first_row = GRADE_SHEET_FIRST_ROW + (hwid,)
         total_score = self.__get_total_score(hwid)
-        second_row = ['Points Possible'] + [''] * (NUM_META_ROWS - 1) + \
-                     [str(total_score)]
-        template_file_name = os.path.join(self.folder_name, self.template_name)
-        out_file_name = os.path.join(out_dir, basename(self.folder_name), basename(self.template_name))
+        second_row = ['Points Possible'] + [''] * (NUM_META_ROWS - 1) + [str(total_score)]
+        tfn = os.path.join(self.folder_name, self.grade_sheet_name)  # grade sheet file name
+        ofn = os.path.join(out_dir, basename(self.folder_name), basename(self.grade_sheet_name))  # out file name
 
-        with open(out_file_name, 'w') as out_file, \
-                open(template_file_name, 'r') as template_file:
+        with open(ofn, 'w') as out_file, open(tfn, 'r') as template_file:
 
             writer = csv.writer(out_file, lineterminator='\n')
             writer.writerow(first_row)
             writer.writerow(second_row)
-            template_file_reader = csv.reader(template_file)
-            next(template_file_reader)  # skip first two rows of template
-            next(template_file_reader)
+            tf_reader = csv.reader(template_file)
+            tf_reader = islice(csv.reader(tf_reader), 2)  # skip first two rows of template
 
-            for row in template_file_reader:
+            for row in tf_reader:
                 hawk_id = row[HAWK_ID_COL]
                 score = self.__score_by_id(hawk_id)
                 row = row[:NUM_META_ROWS]
@@ -196,8 +187,8 @@ class StudentFile:
         self.folder_name = folder_name
         self.full_file_name = file_name
         self.no_ext_file_name = file_name[:-3]
-        self.hawk_id_exc_str = None
-        self.hawk_id_err = None
+        self.hawk_id_exc_str = None  # exception ocurrs while getting hawk id
+        self.hawk_id_err = None  # hawk id does not exist
         self.function_test_results = []
         self.__validate_hawk_id(valid_ids)
 
@@ -221,10 +212,9 @@ class StudentFile:
         """
         string = ''
         if self.hawk_id_exc_str is not None:
-            string += 'something wrong happend when reading your getHawkIDs function:\n'
+            string += HAWK_ID_EXC_STR
         elif self.hawk_id_err:
-            string += 'could not find a match for the hawk id you returned in getHawkIDs function\n'
-            string += 'please double check you spelled it right\n'
+            string += HAWK_ID_NON_EXIST_STR
         for func_result in self.function_test_results:
             string += str(func_result) + '\n'
             for i in range(0, len(func_result.arg_set_test_results)):
