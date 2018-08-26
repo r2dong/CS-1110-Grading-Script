@@ -1,3 +1,5 @@
+""" functions used to run tests """
+
 from traceback import format_exc
 from functools import partial
 from copy import deepcopy
@@ -15,6 +17,11 @@ RUN_TIME_ERR_STR = 'An error ocurred during excuting of your function\n'
 
 
 def run_with_timeout(func):
+    """
+
+    :param func:
+    :return:
+    """
     with ThreadingTimeout(TIMEOUT_SEC):
         exc_str = None
         return_val = None
@@ -31,6 +38,13 @@ def run_with_timeout(func):
 
 # test a single arg_set for given function, return test result instance
 def test_one_arg_set(arg_set, stf_func, sol_func):
+    """
+
+    :param arg_set:
+    :param stf_func:
+    :param sol_func:
+    :return:
+    """
     for arg in arg_set:
         stf_func = partial(stf_func, deepcopy(arg))
         sol_func = partial(sol_func, deepcopy(arg))
@@ -46,7 +60,13 @@ def test_one_arg_set(arg_set, stf_func, sol_func):
 
 
 def test_func(func, stf, sol_name):
+    """
 
+    :param func:
+    :param stf:
+    :param sol_name:
+    :return:
+    """
     sol_func = getattr(__import__(sol_name), func.name)
     # noinspection PyBroadException
     try:
@@ -64,6 +84,9 @@ def test_func(func, stf, sol_name):
 
 
 class FuncTestResult:
+    """
+    Meta information about testing of this function
+    """
     def __init__(self, function_name, score, exc_str):
         self.function_name = function_name
         self.score = score
@@ -71,9 +94,17 @@ class FuncTestResult:
         self.exc_str = exc_str
 
     def add_set_result(self, result):
+        """
+
+        :param result:
+        """
         self.arg_set_test_results.append(result)
 
     def calc_score(self):
+        """
+
+        :return:
+        """
         score = self.score
         for set_result in self.arg_set_test_results:
             if not set_result.is_correct:
@@ -95,7 +126,9 @@ class FuncTestResult:
 
 
 class ArgSetTestResult:
-    
+    """
+    Testing result of a single set of input arguments
+    """
     # constructor
     # inputs: inputs used in this test
     # expected: expected results
@@ -126,17 +159,21 @@ class ArgSetTestResult:
 
 
 def grade_section(sol_fname, funcs, section):
+    """
+
+    :param sol_fname:
+    :param funcs:
+    :param section:
+    """
     for stf in section.student_files:
         for func in funcs:
             test_func(func, stf, sol_fname)
 
 
 class Func:
-
-    # constructor
-    # inputs:
-    # name - <str> name of function
-    # score - <int> points rewarded for correct function
+    """
+    Specs of a single function
+    """
     def __init__(self, name, arg_sets, score):
         self.name = name
         self.arg_sets = arg_sets

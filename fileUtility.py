@@ -1,3 +1,5 @@
+""" this file contains functions to read functions specs, student files, and write grading output to file """
+
 import os
 import ast
 import csv
@@ -16,8 +18,12 @@ GRADE_SHEET_FIRST_ROW = 'Student', 'ID', 'SIS Login ID', 'Section'
 HAWK_ID_COL = 2  # column in template with hawkIDs
 
 
-# find all valid hawk_ids from a grade sheet
 def get_all_hawk_ids(grade_sheet_file_name):
+    """
+    find all valid hawk_ids from a grade sheet
+    :param grade_sheet_file_name: path to a grade sheet
+    :return: a list of strings, with all hawk ids from the given grade sheet
+    """
     with open(grade_sheet_file_name) as file:
         reader = csv.reader(file)
         next(reader)
@@ -25,27 +31,40 @@ def get_all_hawk_ids(grade_sheet_file_name):
         return [row[HAWK_ID_COL] for row in reader]
 
 
-# reads a folder containing submissions of a single section
 def read_folder(folder_name):
+    """
+    reads a folder containing submissions of a single section
+    :param folder_name: folder to be read
+    :return: a Section instance
+    """
+
     file_names = os.listdir(folder_name)
     section = Section(folder_name)
+
     for file_name in file_names:
         _, ext = splitext(file_name)
         if ext == '.csv':
             file_name = os.path.join(folder_name, file_name)
             valid_hawk_ids = get_all_hawk_ids(file_name)
             break
+
     for file_name in file_names:
         _, ext = splitext(file_name)
         if ext == '.csv':
             section.template_name = file_name
         else:
+            # noinspection PyUnboundLocalVariable
             section.add_file(StudentFile(folder_name, file_name, valid_hawk_ids))
+
     return section
 
 
-# fName: full path to file to be parsed
 def parse_func_specs(fileName):
+    """
+    parse a func spec file into Function instances
+    :param fileName: path of function spec file
+    :return: a list of Function instances
+    """
     funcs = []
     is_last = False
     with open(fileName) as file:
@@ -56,8 +75,12 @@ def parse_func_specs(fileName):
     return funcs
 
 
-# helper function that read one function out of spec file
 def parse_one_func(reader):
+    """
+    read one function out of spec file
+    :param reader: csv reader on the func spec file
+    :return: a single Function instance
+    """
 
     # meta info of function
     is_last = False
@@ -86,6 +109,7 @@ def parse_one_func(reader):
 
 
 class Section:
+    """ instance representing all submissions of a single section """
 
     def __init__(self, folder_name):
         self.student_files = []
@@ -93,16 +117,27 @@ class Section:
         self.folder_name = folder_name
 
     def grade_section(self, sol_fname, funcs):
+        """
+        grade all submissions of this section
+        :param sol_fname: path of solution file
+        :param funcs: list of Function instances specifying function specs
+        """
         for stf in self.student_files:
             for func in funcs:
                 test_func(func, stf, sol_fname)
 
-    # add a new StudentFile instance
     def add_file(self, file):
+        """
+        add a new StudentFile instance
+        :param: file: a StudnetFile instance
+        """
         self.student_files.append(file)
 
-    # write test feedback to all student files in this section
     def write_test_results(self, out_dir):
+        """
+        write test feedback to all student files in this section
+        :param out_dir: destination directory to place the new files
+        """
         for student_file in self.student_files:
             student_file.write_test_results(os.path.join(out_dir, basename(self.folder_name)))
 
@@ -115,6 +150,7 @@ class Section:
                 if first_row[i] == hwid:
                     score_col = i
             score_row = next(reader)
+            # noinspection PyUnboundLocalVariable
             return score_row[score_col]
 
     # get a score using hawk id, or return none if id does not exist
@@ -124,14 +160,18 @@ class Section:
                 return stf.calc_score()
 
     def write_grade_sheet(self, out_dir, hwid):
+        """ write the grade sheet for this section """
+
         first_row = GRADE_SHEET_FIRST_ROW + (hwid,)
         total_score = self.__get_total_score(hwid)
         second_row = ['Points Possible'] + [''] * (NUM_META_ROWS - 1) + \
                      [str(total_score)]
         template_file_name = os.path.join(self.folder_name, self.template_name)
         out_file_name = os.path.join(out_dir, basename(self.folder_name), basename(self.template_name))
+
         with open(out_file_name, 'w') as out_file, \
                 open(template_file_name, 'r') as template_file:
+
             writer = csv.writer(out_file, lineterminator='\n')
             writer.writerow(first_row)
             writer.writerow(second_row)
@@ -149,6 +189,7 @@ class Section:
 
 
 class StudentFile:
+    """ represents a single submission from a student """
 
     def __init__(self, folder_name, file_name, valid_ids):
         self.path = os.path.join(folder_name, file_name)
@@ -174,6 +215,10 @@ class StudentFile:
 
     # append test results as comments at back of file
     def write_test_results(self, out_dir):
+        """
+        make a copy of the student submission, then write feedbacks as comments to the end
+        :param out_dir: output destination of the grade sheet
+        """
         string = ''
         if self.hawk_id_exc_str is not None:
             string += 'something wrong happend when reading your getHawkIDs function:\n'
@@ -193,12 +238,12 @@ class StudentFile:
             file.write('\n' * NUM_PADDING)
             file.write((lambda s: '# ' + s.replace("\n", "\n# "))(string))
 
-    # calculate the score of this student
     def calc_score(self):
+        """
+        calculate the score of this student
+        :return: the score
+        """
         score = 0
         for result in self.function_test_results:
             score += result.calc_score()
         return score
-
-
-

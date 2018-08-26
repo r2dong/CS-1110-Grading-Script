@@ -1,12 +1,14 @@
+""" entry point of grading script """
+
 import fileUtility
 import argparse
 import sys
 from os.path import dirname
 from os.path import basename
-import Newtester
 
 
 def main():
+    """ entry point of grading script """
 
     parser = argparse.ArgumentParser()  # parse command line arguments
     parser.add_argument('-p', nargs='+', dest='paths', type=str)  # section folders
