@@ -1,6 +1,5 @@
 """ functions used to run tests """
 
-from traceback import format_exc
 from functools import partial
 from copy import deepcopy
 from stopit import ThreadingTimeout
@@ -9,11 +8,10 @@ import stopit
 # constants
 SEPERATOR = '-' * 15
 TIMEOUT_SEC = 5
-INFINITE_LOOP_STR = 'Function not finished within 5 seconds, ' \
-                    'very likely due to infinite loops\n'
-FUNC_TEST_HEADER = '-' * 15 + ' function: %s, score: %d \
-                      /%d' + '-' * 15 + '\n'
+INFINITE_LOOP_STR = 'Function call did not return in < 5sec, likely an infinite loop\n'
+FUNC_TEST_HEADER = '-' * 15 + ' function: %s, score: %d/%d' + '-' * 15 + '\n'
 RUN_TIME_ERR_STR = 'An error ocurred during excuting of your function\n'
+LOAD_TIME_ERR_STR = 'An error occured when loading your function for grading\n'
 
 
 def run_with_timeout(func):
@@ -32,7 +30,7 @@ def run_with_timeout(func):
         except stopit.utils.TimeoutException:
             time_out = True
         except Exception:
-            exc_str = format_exc()
+            exc_str = RUN_TIME_ERR_STR
     return time_out, return_val, exc_str
 
 
@@ -71,11 +69,11 @@ def test_func(func, stf, sol_name):
     try:
         sft_func = getattr(__import__(stf.no_ext_file_name), func.name)
     except Exception:
-        func_result = FuncTestResult(func.name, func.score, format_exc())
+        func_result = FuncTestResult(func.name, func.score, True)
         stf.function_test_results.append(func_result)
         return
 
-    func_result = FuncTestResult(func.name, func.score, None)
+    func_result = FuncTestResult(func.name, func.score, False)
     stf.function_test_results.append(func_result)
     for arg_set in func.arg_sets:  # set up function calls
         set_result = test_one_arg_set(arg_set, sft_func, sol_func)
@@ -86,11 +84,11 @@ class FuncTestResult:
     """
     Meta information about testing of this function
     """
-    def __init__(self, function_name, score, exc_str):
+    def __init__(self, function_name, score, exc):
         self.function_name = function_name
         self.score = score
         self.arg_set_test_results = []
-        self.exc_str = exc_str
+        self.exc = exc
 
     def add_set_result(self, result):
         """
@@ -114,11 +112,11 @@ class FuncTestResult:
 
     def __str__(self):
 
-        if self.exc_str is not None:
+        if self.exc:
             score_recieved = 0
-            body = RUN_TIME_ERR_STR
+            body = LOAD_TIME_ERR_STR
         else:
-            score_recieved = self.score
+            score_recieved = self.calc_score()
             num_tests = str(len(self.arg_set_test_results))
             body = num_tests + ' cases were tested\n'
         header = FUNC_TEST_HEADER % (self.function_name, score_recieved, self.score)
@@ -153,8 +151,7 @@ class ArgSetTestResult:
         else:
             strRep += "failed"
         if self.exception_str is not None:
-            strRep += "A runtime error occurred with the following message:\n"
-            strRep += self.exception_str
+            strRep += "\n" + self.exception_str
         return strRep
 
 

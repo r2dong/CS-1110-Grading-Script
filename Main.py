@@ -1,6 +1,6 @@
 """ entry point of grading script """
 
-import fileUtility
+import File_Utility
 import argparse
 import sys
 from os.path import dirname
@@ -36,7 +36,7 @@ def main():
         the_id = cmdArgs.hwids[0]
         cmdArgs.hwids = [the_id for _ in range(0, len(cmdArgs.paths))]
 
-    funcs = fileUtility.parse_func_specs(cmdArgs.spec)  # parse func specs
+    funcs = File_Utility.parse_func_specs(cmdArgs.spec)  # parse func specs
 
     # modify sys path to include relevant files
     for path in cmdArgs.paths:
@@ -45,7 +45,7 @@ def main():
     cmdArgs.sol = basename(cmdArgs.sol)[:-3]
 
     for path, hwid in zip(cmdArgs.paths, cmdArgs.hwids):
-        section = fileUtility.read_folder(path)
+        section = File_Utility.read_folder(path)
         section.grade_section(cmdArgs.sol, funcs)
         section.write_test_results(cmdArgs.out_dir)
         section.write_grade_sheet(cmdArgs.out_dir, hwid)

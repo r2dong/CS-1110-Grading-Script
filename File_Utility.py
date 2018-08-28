@@ -5,24 +5,34 @@ student files, and write grading output to file
 
 import os
 import csv
-from traceback import format_exc
 from os.path import splitext
 from shutil import copy
 from os.path import basename
 from os import makedirs
-from Newtester import test_func
-from Newtester import Func
-from itertools import islice
+from Tester import test_func
+from Tester import Func
 from ast import literal_eval
 
 # constants
+NUM_HEADER_ROWS = 2  # #header rows in grade sheet
 NUM_PADDING = 5
 NUM_META_ROWS = 4  # first n columns to copy from template grade sheet
 GRADE_SHEET_FIRST_ROW = 'Student', 'ID', 'SIS Login ID', 'Section'
 HAWK_ID_COL = 2  # column in template with hawkIDs
-HAWK_ID_EXC_STR = 'something wrong happend when reading your getHawkIDs function:\n'
-HAWK_ID_NON_EXIST_STR = 'could not find a match for the hawk id you returned in getHawkIDs function\n \
-                         please double check you spelled it right\n'
+HAWK_ID_EXC_STR = 'something wrong happend when reading your getHawkIDs function\n'
+HAWK_ID_NON_EXIST_STR = 'could not find a match for the hawk id you returned in getHawkIDs function\n' + \
+                        'please double check you spelled it right\n'
+SYNTAX_ERR = 'It appears that your file has a syntax error\n'
+
+
+def skip_elems(n, iterator):
+    """
+    skip n elements of an iterator
+    islice method appears problematic for no obvious reason
+    """
+    for i in range(0, n):
+        next(iterator)
+    return iterator
 
 
 def get_hawk_ids(grade_sheet_file_name):
@@ -32,7 +42,7 @@ def get_hawk_ids(grade_sheet_file_name):
     :return: a list of strings, with all hawk ids from the given grade sheet
     """
     with open(grade_sheet_file_name) as file:
-        reader = islice(csv.reader(file), 2)
+        reader = skip_elems(NUM_HEADER_ROWS, csv.reader(file))
         return [row[HAWK_ID_COL] for row in reader]
 
 
@@ -151,7 +161,7 @@ class Section:
     def __score_by_id(self, hawk_id):
         for stf in self.student_files:
             if hawk_id == stf.hawk_id:
-                return stf.calc_score()
+                return stf.calc_total_score()
 
     def write_grade_sheet(self, out_dir, hwid):
         """ write the grade sheet for this section """
@@ -167,8 +177,7 @@ class Section:
             writer = csv.writer(out_file, lineterminator='\n')
             writer.writerow(first_row)
             writer.writerow(second_row)
-            tf_reader = csv.reader(template_file)
-            tf_reader = islice(csv.reader(tf_reader), 2)  # skip first two rows of template
+            tf_reader = skip_elems(NUM_HEADER_ROWS, csv.reader(template_file))
 
             for row in tf_reader:
                 hawk_id = row[HAWK_ID_COL]
@@ -188,21 +197,27 @@ class StudentFile:
         self.full_file_name = file_name
         self.no_ext_file_name = file_name[:-3]
         self.hawk_id_exc_str = None  # exception ocurrs while getting hawk id
-        self.hawk_id_err = None  # hawk id does not exist
+        self.hawk_id_err = False  # hawk id does not exist
+        self.hawk_id = None
         self.function_test_results = []
         self.__validate_hawk_id(valid_ids)
 
     def __validate_hawk_id(self, valid_ids):
         # noinspection PyBroadException
-        try:
-            self.hawk_id = __import__(self.no_ext_file_name).getHawkIDs()[0]
+        try:  # first check if there is syntax error (if the file loads)
+            __import__(self.no_ext_file_name)
         except Exception:
-            self.hawk_id = None
-            err_str = format_exc()
-            err_str = err_str[err_str.rfind('\n', 0, len(err_str) - 1) + 1:]
-            self.hawk_id_exc_str = err_str
-        if self.hawk_id not in valid_ids:
-            self.hawk_id_err = True
+            self.hawk_id_exc_str = SYNTAX_ERR
+        if self.hawk_id_exc_str is None:
+            # noinspection PyBroadException
+            try:
+                self.hawk_id = __import__(self.no_ext_file_name).getHawkIDs()[0]
+            except Exception:
+                self.hawk_id_exc_str = HAWK_ID_EXC_STR
+
+        if self.hawk_id is not None:
+            if self.hawk_id not in valid_ids:
+                self.hawk_id_err = True
 
     # append test results as comments at back of file
     def write_test_results(self, out_dir):
@@ -212,14 +227,16 @@ class StudentFile:
         """
         string = ''
         if self.hawk_id_exc_str is not None:
-            string += HAWK_ID_EXC_STR
+            string += self.hawk_id_exc_str
         elif self.hawk_id_err:
             string += HAWK_ID_NON_EXIST_STR
         for func_result in self.function_test_results:
             string += str(func_result) + '\n'
+            # TODO simplify output
             for i in range(0, len(func_result.arg_set_test_results)):
                 string += 'case: ' + str(i) + ':\n'
                 string += str(func_result.arg_set_test_results[i]) + '\n' * 2
+            # TODO simplify absolute and relative path with object
         makedirs(out_dir, exist_ok=True)
         old_file_name = os.path.join(self.folder_name, self.full_file_name)
         new_file_name = os.path.join(out_dir, self.full_file_name)
@@ -228,7 +245,7 @@ class StudentFile:
             file.write('\n' * NUM_PADDING)
             file.write((lambda s: '# ' + s.replace("\n", "\n# "))(string))
 
-    def calc_score(self):
+    def calc_total_score(self):
         """
         calculate the score of this student
         :return: the score
