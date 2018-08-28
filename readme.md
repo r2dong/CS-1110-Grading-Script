@@ -1,23 +1,39 @@
-Python Unit Testing (Developing)
+Grading Script for UIowa CS:1110 Introduction to CS
 ===================
 
-### Overview
-Correctness of functions are determined by comparing return value with either a correct implementation or a set of hard-coded inputs and return values. This program works only for pure functions (those return fixed values given fixed input). Test results are appended to source files being tested, and additional instructions may be provided for more customized output.
+Grading is done by comparing return values of functions submitted by students and that of
+a solution function. We assume these functions to be fully determinstic, such that there is a
+one-to-one relationship between input arguments and return values.
 
-If a correct implementation is available, all input parameters of a function are specified, and the program generates according random values as inputs. It then checks if the function being tested and the correct implementation share the same return value.
+## Usage
+<pre>
+usage: Main.py [-h] -p PATHS [PATHS ...] -i HWIDS [HWIDS ...] -s SOL -f SPEC
+               -o OUT_DIR
 
-<<<<<<< HEAD
-A GUI is being developed currently, and a more detailed description on usage will be provided once everything is integrated and packaged.
+optional arguments:
+  -h, --help            show this help message and exit
+  -p PATHS [PATHS ...]  Paths to folders representing all submitted files of
+                        each section. Each folder should directly contain all
+                        .py files submitted by stuents and only 1 csv file
+                        that is the grade sheet of that section downloaded
+                        from ICON
+  -i HWIDS [HWIDS ...]  Homework IDs (column header of the homework entry in
+                        the grade sheet). They should be entered in the same
+                        order with sections provided in -P arguments
+  -s SOL                Path to solution file
+  -f SPEC               Path to function spec file. See "example" folder at
+                        https://github.com/r2dong/Intro-to-CS-Grading-Script
+                        for an example
+  -o OUT_DIR            Path to output folder. Any comments and grade sheet
+                        will be created as copies, and the original files will
+                        not be affected
+</pre>
 
-### Motivation
-Previously a script was developed for grading homework for a introductory level python course. The script hard-coded function calls to both submissions and the solution, as well as writting output to submission source files. As a result, the script needs to be re-written for each homework, which was error-prone and time-consuming: for exmaple, it is very easy to mess up building the strings to be re-written, and submitted files sometime modify input through references, in which case the script mistakenly marks points off the submission. 
-=======
-A GUI is being developed currently, and a more detailed description will be provided once everything is integrated and packaged.
-
-All edge cases handled
-- syntax errors in file
-- infinte loops
-- incorrect function names/(or they did not bother writing the function at all)
-- incorrect function signature (i.e., incorrect number of input args)
-- runtime errors
->>>>>>> f504fbf... print preset strings for runtime err
+## edge cases handled
+- incorrect hawk id: comments will still be provided, but the student recieve 0 for the assignment
+- syntax errors in submissions: 0 assigned for the submission
+- infinte loops: given complexity of assignments, it is assumed that execution of any function would be < 5 sec.
+0 is assigned for the function with infinite loops
+- incorrect function names/(basically when the function could not be found): 0 is assigned for the function 
+- incorrect function signature (i.e., incorrect number of input args): same as runtime error
+- runtime errors: 0 is assigned for the function
