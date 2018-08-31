@@ -23,9 +23,11 @@ HAWK_ID_EXC_STR = 'something wrong happend when reading your getHawkIDs function
                   'maybe there is a typo in function name?\n'
 HAWK_ID_NON_EXIST_STR = 'could not find a match for the hawk id you returned in getHawkIDs function\n' + \
                         'maybe you did not spell it right?\n'
-HAWK_ID_TA = 'Note that you are assigned a score of 0 if getHawkIDs function is incorrect\n' + \
-             'Please discuss this with a TA ASAP to recieve credit for this assignment\n'
-SYNTAX_ERR = 'It appears that your file has a syntax error\n'
+SEE_TA = 'Note that you are assigned a score of 0 for this\n' + \
+         'Please discuss with a TA ASAP to recieve credit for this assignment\n'
+SYNTAX_ERR = 'It appears that your file has a syntax error\n' + \
+             'Be sure to click the GREEN ARROW in the upper middle before submitting\n' + \
+             'and confirm you file loads without any syntax errors\n'
 HAWK_ID_COMMENT = '--------------- function: getHawkIDs, score: %d/1---------------\n'
 
 
@@ -200,6 +202,7 @@ class StudentFile:
         self.folder_name = folder_name  # TODO refactor out with member method
         self.full_file_name = file_name
         self.no_ext_file_name = file_name[:-3]
+        self.syntax_err = False
         self.hawk_id_exc_str = None  # exception ocurrs while getting hawk id
         self.hawk_id_err = False  # hawk id does not exist
         self.hawk_id = None
@@ -207,27 +210,29 @@ class StudentFile:
         self.__validate_hawk_id(valid_ids)
 
     def __validate_hawk_id(self, valid_ids):
+
         # noinspection PyBroadException
         try:  # first check if there is syntax error (if the file loads)
             __import__(self.no_ext_file_name)
         except Exception:
-            self.hawk_id_exc_str = SYNTAX_ERR
-        if self.hawk_id_exc_str is None:
-            # noinspection PyBroadException
-            try:
-                self.hawk_id = __import__(self.no_ext_file_name).getHawkIDs()[0]
-            except Exception:
-                self.hawk_id_exc_str = HAWK_ID_EXC_STR
+            self.syntax_err = True
+            return
 
-        if self.hawk_id is not None:
-            if self.hawk_id not in valid_ids:
-                self.hawk_id_err = True
+        # noinspection PyBroadException
+        try:  # then check if getHawkIDs is syntax correct
+            self.hawk_id = __import__(self.no_ext_file_name).getHawkIDs()[0]
+        except Exception:
+            self.hawk_id_exc_str = HAWK_ID_EXC_STR
+            return
+
+        if self.hawk_id not in valid_ids:  # finally check if hawk_id obtained is valid
+            self.hawk_id_err = True
 
     def __hawk_id_comment(self):
         if self.hawk_id_exc_str:
-            return HAWK_ID_COMMENT % 0 + self.hawk_id_exc_str + HAWK_ID_TA + '\n'
+            return HAWK_ID_COMMENT % 0 + self.hawk_id_exc_str + SEE_TA + '\n'
         elif self.hawk_id_err:
-            return HAWK_ID_COMMENT % 0 + HAWK_ID_NON_EXIST_STR + HAWK_ID_TA + '\n'
+            return HAWK_ID_COMMENT % 0 + HAWK_ID_NON_EXIST_STR + SEE_TA + '\n'
         else:  # hawk id all good
             return HAWK_ID_COMMENT % 1 + '\n'
 
@@ -236,15 +241,18 @@ class StudentFile:
         make a copy of the student submission, then write feedbacks as comments to the end
         :param out_dir: output destination of the grade sheet
         """
-        string = self.__hawk_id_comment()
-        for func_result in self.function_test_results:
-            string += str(func_result) + '\n'
-            for result in func_result.arg_set_test_results:
-                string += str(result) + '\n' * 2
         makedirs(out_dir, exist_ok=True)
         old_file_name = os.path.join(self.folder_name, self.full_file_name)
         new_file_name = os.path.join(out_dir, self.full_file_name)
         path = copy(old_file_name, new_file_name)
+        if self.syntax_err:  # no need for comments if submission has syntax error
+            string = SYNTAX_ERR + SEE_TA
+        else:
+            string = self.__hawk_id_comment()
+            for func_result in self.function_test_results:
+                string += str(func_result) + '\n'
+                for result in func_result.arg_set_test_results:
+                    string += str(result) + '\n' * 2
         with open(path, 'a') as file:
             file.write('\n' * NUM_PADDING)
             file.write((lambda s: '# ' + s.replace("\n", "\n# "))(string))
