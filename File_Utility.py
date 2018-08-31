@@ -19,10 +19,12 @@ NUM_PADDING = 5
 NUM_META_ROWS = 4  # first n columns to copy from template grade sheet
 GRADE_SHEET_FIRST_ROW = 'Student', 'ID', 'SIS Login ID', 'Section'
 HAWK_ID_COL = 2  # column in template with hawkIDs
-HAWK_ID_EXC_STR = 'something wrong happend when reading your getHawkIDs function\n'
+HAWK_ID_EXC_STR = 'something wrong happend when reading your getHawkIDs function\n' + \
+                  'maybe there is a typo in function name?\n'
 HAWK_ID_NON_EXIST_STR = 'could not find a match for the hawk id you returned in getHawkIDs function\n' + \
-                        'please double check you spelled it right\n'
+                        'maybe you did not spell it right?\n'
 SYNTAX_ERR = 'It appears that your file has a syntax error\n'
+HAWK_ID_COMMENT = '--------------- function: getHawkIDs, score: %d/1---------------\n'
 
 
 def skip_elems(n, iterator):
@@ -193,7 +195,7 @@ class StudentFile:
 
     def __init__(self, folder_name, file_name, valid_ids):
         self.path = os.path.join(folder_name, file_name)
-        self.folder_name = folder_name
+        self.folder_name = folder_name  # TODO refactor out with member method
         self.full_file_name = file_name
         self.no_ext_file_name = file_name[:-3]
         self.hawk_id_exc_str = None  # exception ocurrs while getting hawk id
@@ -219,24 +221,24 @@ class StudentFile:
             if self.hawk_id not in valid_ids:
                 self.hawk_id_err = True
 
-    # append test results as comments at back of file
+    def __hawk_id_comment(self):
+        if self.hawk_id_exc_str is not None:
+            return HAWK_ID_COMMENT % 0 + self.hawk_id_exc_str + '\n'
+        elif self.hawk_id_err:
+            return HAWK_ID_COMMENT % 0 + HAWK_ID_NON_EXIST_STR + '\n'
+        else:  # hawk id all good
+            return HAWK_ID_COMMENT % 1 + '\n'
+
     def write_test_results(self, out_dir):
         """
         make a copy of the student submission, then write feedbacks as comments to the end
         :param out_dir: output destination of the grade sheet
         """
-        string = ''
-        if self.hawk_id_exc_str is not None:
-            string += self.hawk_id_exc_str
-        elif self.hawk_id_err:
-            string += HAWK_ID_NON_EXIST_STR
+        string = self.__hawk_id_comment()
         for func_result in self.function_test_results:
             string += str(func_result) + '\n'
-            # TODO simplify output
-            for i in range(0, len(func_result.arg_set_test_results)):
-                string += 'case: ' + str(i) + ':\n'
-                string += str(func_result.arg_set_test_results[i]) + '\n' * 2
-            # TODO simplify absolute and relative path with object
+            for result in func_result.arg_set_test_results:
+                string += str(result) + '\n' * 2
         makedirs(out_dir, exist_ok=True)
         old_file_name = os.path.join(self.folder_name, self.full_file_name)
         new_file_name = os.path.join(out_dir, self.full_file_name)
