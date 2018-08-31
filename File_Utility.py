@@ -23,6 +23,8 @@ HAWK_ID_EXC_STR = 'something wrong happend when reading your getHawkIDs function
                   'maybe there is a typo in function name?\n'
 HAWK_ID_NON_EXIST_STR = 'could not find a match for the hawk id you returned in getHawkIDs function\n' + \
                         'maybe you did not spell it right?\n'
+HAWK_ID_TA = 'Note that you are assigned a score of 0 if getHawkIDs function is incorrect\n' + \
+             'Please discuss this with a TA ASAP to recieve credit for this assignment\n'
 SYNTAX_ERR = 'It appears that your file has a syntax error\n'
 HAWK_ID_COMMENT = '--------------- function: getHawkIDs, score: %d/1---------------\n'
 
@@ -163,7 +165,7 @@ class Section:
     def __score_by_id(self, hawk_id):
         for stf in self.student_files:
             if hawk_id == stf.hawk_id:
-                return stf.calc_total_score()
+                return stf.score()
 
     def write_grade_sheet(self, out_dir, hwid):
         """ write the grade sheet for this section """
@@ -222,10 +224,10 @@ class StudentFile:
                 self.hawk_id_err = True
 
     def __hawk_id_comment(self):
-        if self.hawk_id_exc_str is not None:
-            return HAWK_ID_COMMENT % 0 + self.hawk_id_exc_str + '\n'
+        if self.hawk_id_exc_str:
+            return HAWK_ID_COMMENT % 0 + self.hawk_id_exc_str + HAWK_ID_TA + '\n'
         elif self.hawk_id_err:
-            return HAWK_ID_COMMENT % 0 + HAWK_ID_NON_EXIST_STR + '\n'
+            return HAWK_ID_COMMENT % 0 + HAWK_ID_NON_EXIST_STR + HAWK_ID_TA + '\n'
         else:  # hawk id all good
             return HAWK_ID_COMMENT % 1 + '\n'
 
@@ -247,12 +249,14 @@ class StudentFile:
             file.write('\n' * NUM_PADDING)
             file.write((lambda s: '# ' + s.replace("\n", "\n# "))(string))
 
-    def calc_total_score(self):
+    def score(self):
         """
         calculate the score of this student
         :return: the score
         """
-        score = 0
+        score = 1
+        if self.hawk_id_exc_str or self.hawk_id_err:
+            score = 0
         for result in self.function_test_results:
             score += result.calc_score()
         return score
