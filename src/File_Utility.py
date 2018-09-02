@@ -9,8 +9,8 @@ from os.path import splitext
 from shutil import copy
 from os.path import basename
 from os import makedirs
-from Tester import test_func
-from Tester import Func
+from src.Tester import test_func
+from src.Tester import Func
 from ast import literal_eval
 
 # constants
@@ -70,7 +70,8 @@ def read_folder(folder_name):
     # deal with all student submission files
     stfnms = list(filter(lambda fn: splitext(fn)[1] != '.csv', fnms))
     for fn in stfnms:
-        section.add_file(StudentFile(folder_name, fn, valid_hawk_ids))
+        if not fn == '__pycache__':
+            section.add_file(StudentFile(folder_name, fn, valid_hawk_ids))
 
     return section
 
