@@ -248,7 +248,7 @@ class StudentFile:
         if self.syntax_err:  # no need for comments if submission has syntax error
             string = SYNTAX_ERR + SEE_TA
         else:
-            string = self.__hawk_id_comment()
+            string = self.__hawk_id_comment()  # TODO refactor with interface
             for func_result in self.function_test_results:
                 string += str(func_result) + '\n'
                 for result in func_result.arg_set_test_results:
