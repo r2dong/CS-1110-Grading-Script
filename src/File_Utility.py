@@ -6,6 +6,7 @@ student files, and write grading output to file
 import os
 import csv
 from os.path import splitext
+from os.path import dirname
 from shutil import copy
 from os.path import basename
 from os import makedirs
@@ -24,11 +25,43 @@ HAWK_ID_EXC_STR = 'something wrong happend when reading your getHawkIDs function
 HAWK_ID_NON_EXIST_STR = 'could not find a match for the hawk id you returned in getHawkIDs function\n' + \
                         'maybe you did not spell it right?\n'
 SEE_TA = 'Note that you are assigned a score of 0 for this\n' + \
-         'Please discuss with a TA ASAP to recieve credit for this assignment\n'
+         'Please discuss with a TA ASAP IN PERSON to recieve credit for this assignment\n'
 SYNTAX_ERR = 'It appears that your file has a syntax error\n' + \
              'Be sure to click the GREEN ARROW in the upper middle before submitting\n' + \
              'and confirm you file loads without any syntax errors\n'
 HAWK_ID_COMMENT = '--------------- function: getHawkIDs, score: %d/1---------------\n'
+OH = 'Have trouble completing this assignment? Get help during the following OH/Study Group Sessions:\n' \
+     'APOORV ADITYA  (also requesting all queries over grading of discussion assignments) -:\n' \
+     'Email:\n' \
+     'apoorv-aditya@uiowa.edu\n' \
+     '\n' \
+     'Study groups-:\n' \
+     'Monday 4:30 pm to 5:30 pm (301 MLH) \n' \
+     'Tuesday 6 pm to 7 pm (301 MLH) \n' \
+     '\n' \
+     'Office hours-: \n' \
+     'Mon 12:30 pm to 1:30 pm (101N MLH)\n' \
+     'Tue 3:30 pm to 5:30 pm (101N MLH) \n' \
+     ' \n' \
+     'Rentian Dong  (direct all queries on Programming Assignment grading to him):\n' \
+     'Email:\n' \
+     'rentian-dong@uiowa.edu\n' \
+     ' \n' \
+     'Office hours:\n' \
+     'Thur 6:00 pm to 7:00 pm (301 MLH)\n' \
+     'Fri 3:30 pm - 5:30 pm (301 MLH) \n' \
+     ' \n' \
+     'Jessica Lu \n' \
+     'Email:\n' \
+     'jessica-lu@uiowa.edu\n' \
+     '\n' \
+     'Study groups:\n' \
+     'Wednesday 6:30 pm to 7:30 pm (B13 MLH)\n' \
+     'Thur 4pm to 5pm (B13 MLH) \n' \
+     '\n' \
+     'Office hours:\n' \
+     'Wednesday 4:30 pm to 5:30 pm (301 MLH)\n' \
+     'Friday  10am to 12pm (B13 MLH)\n'
 
 
 def skip_elems(n, iterator):
@@ -199,10 +232,7 @@ class StudentFile:
     """ represents a single submission from a student """
 
     def __init__(self, folder_name, file_name, valid_ids):
-        self.path = os.path.join(folder_name, file_name)
-        self.folder_name = folder_name  # TODO refactor out with member method
-        self.full_file_name = file_name
-        self.no_ext_file_name = file_name[:-3]
+        self.__full_path = os.path.join(folder_name, file_name)
         self.syntax_err = False
         self.hawk_id_exc_str = None  # exception ocurrs while getting hawk id
         self.hawk_id_err = False  # hawk id does not exist
@@ -210,18 +240,32 @@ class StudentFile:
         self.function_test_results = []
         self.__validate_hawk_id(valid_ids)
 
+    def __path(self):
+        return self.__full_path
+
+    def __folder(self):
+        return dirname(self.__path())
+
+    def __file_ext(self):
+        return basename(self.__path())
+
+    def file_xext(self):
+        """ file name with out extension """
+        name_ext = self.__file_ext()
+        return name_ext[:name_ext.rfind('.')]
+
     def __validate_hawk_id(self, valid_ids):
 
         # noinspection PyBroadException
         try:  # first check if there is syntax error (if the file loads)
-            __import__(self.no_ext_file_name)
+            __import__(self.file_xext())
         except Exception:
             self.syntax_err = True
             return
 
         # noinspection PyBroadException
         try:  # then check if getHawkIDs is syntax correct
-            self.hawk_id = __import__(self.no_ext_file_name).getHawkIDs()[0]
+            self.hawk_id = __import__(self.file_xext()).getHawkIDs()[0].lower()
         except Exception:
             self.hawk_id_exc_str = HAWK_ID_EXC_STR
             return
@@ -243,17 +287,15 @@ class StudentFile:
         :param out_dir: output destination of the grade sheet
         """
         makedirs(out_dir, exist_ok=True)
-        old_file_name = os.path.join(self.folder_name, self.full_file_name)
-        new_file_name = os.path.join(out_dir, self.full_file_name)
-        path = copy(old_file_name, new_file_name)
+        new_fn = os.path.join(out_dir, self.__file_ext())
+        path = copy(self.__path(), new_fn)
         if self.syntax_err:  # no need for comments if submission has syntax error
             string = SYNTAX_ERR + SEE_TA
         else:
-            string = self.__hawk_id_comment()  # TODO refactor with interface
+            string = self.__hawk_id_comment()
             for func_result in self.function_test_results:
-                string += str(func_result) + '\n'
-                for result in func_result.arg_set_test_results:
-                    string += str(result) + '\n' * 2
+                string += str(func_result) + '\n' * 2
+            string += '\n' * NUM_PADDING + OH
         with open(path, 'a') as file:
             file.write('\n' * NUM_PADDING)
             file.write((lambda s: '# ' + s.replace("\n", "\n# "))(string))

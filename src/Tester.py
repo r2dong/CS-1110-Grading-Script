@@ -5,6 +5,8 @@ from copy import deepcopy
 from stopit import ThreadingTimeout
 import stopit
 
+from traceback import format_exc
+
 # constants
 SEPERATOR = '-' * 15
 TIMEOUT_SEC = 5
@@ -67,10 +69,11 @@ def test_func(func, stf, sol_name):
     sol_func = getattr(__import__(sol_name), func.name)
     # noinspection PyBroadException
     try:
-        sft_func = getattr(__import__(stf.no_ext_file_name), func.name)
+        sft_func = getattr(__import__(stf.file_xext()), func.name)
     except Exception:
         func_result = FuncTestResult(func.name, func.score, True)
         stf.function_test_results.append(func_result)
+        print(format_exc())
         return
 
     func_result = FuncTestResult(func.name, func.score, False)
@@ -120,7 +123,7 @@ class FuncTestResult:
             num_tests = str(len(self.arg_set_test_results))
             body = num_tests + ' cases were tested\n'
         header = FUNC_TEST_HEADER % (self.function_name, score_recieved, self.score)
-        return header + body
+        return header + body + '\n\n'.join([str(r) for r in self.arg_set_test_results])
 
 
 class ArgSetTestResult:
