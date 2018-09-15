@@ -1,0 +1,12 @@
+-p
+"......\example\All_Original_Submissions\Section1_(Problematic_Submissions)"
+"......\example\All_Original_Submissions\Section2_(Non_Problematic_Submissions)"
+-s
+"......\example\solution_file.py"
+-f
+"......\example\spec.csv"
+-i
+"Test Assignment for Section 1"
+"Test Assignment for Section 2"
+-o
+"......\example\Grading_Output"

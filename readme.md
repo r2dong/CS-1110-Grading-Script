@@ -29,7 +29,7 @@ optional arguments:
                         not be affected
 </pre>
 
-## edge cases handled
+## Edge Cases Handled
 - incorrect hawk id: comments will still be provided, but the student recieve 0 for the assignment
 - syntax errors in submissions: 0 assigned for the submission
 - infinte loops: given complexity of assignments, it is assumed that execution of any function would be < 5 sec.
@@ -37,3 +37,7 @@ optional arguments:
 - incorrect function names/(basically when the function could not be found): 0 is assigned for the function 
 - incorrect function signature (i.e., incorrect number of input args): same as runtime error
 - runtime errors: 0 is assigned for the function
+
+## Example
+All sample files necessary to conduct one grading are in the example/ folder, and corresponding outputs are in <br>
+example/Grading_Output/. The command line arugments required are in arguments.txt.
