@@ -203,6 +203,24 @@ class Section:
             if hawk_id == stf.hawk_id:
                 return stf.score()
 
+    # add "SIS User ID" column to output grade sheet, if missing
+    @staticmethod
+    def __fix_SIS_User_ID(fn):
+        with open(fn) as f:
+            reader = csv.reader(f)
+            first_row = next(reader)
+            if 'SIS_User_ID' in first_row:
+                return
+        with open(fn) as f:
+            reader = csv.reader(f)
+            all_rows = [r for r in reader]
+            all_rows[0].insert(2, 'SIS User ID')
+            for r in all_rows[1:]:
+                r.insert(2, '')
+        with open(fn, 'w') as f:
+            writer = csv.writer(f, lineterminator='\n')
+            writer.writerows(all_rows)
+
     def write_grade_sheet(self, out_dir, hwid):
         """ write the grade sheet for this section """
 
@@ -225,7 +243,11 @@ class Section:
                 row = row[:NUM_META_ROWS]
                 if score is not None:
                     row += [str(score)]
+                else:
+                    row += ['']
                 writer.writerow(row)
+
+        Section.__fix_SIS_User_ID(ofn)
 
 
 class StudentFile:

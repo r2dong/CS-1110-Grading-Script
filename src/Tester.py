@@ -5,8 +5,6 @@ from copy import deepcopy
 from stopit import ThreadingTimeout
 import stopit
 
-from traceback import format_exc
-
 # constants
 SEPERATOR = '-' * 15
 TIMEOUT_SEC = 5
@@ -73,7 +71,6 @@ def test_func(func, stf, sol_name):
     except Exception:
         func_result = FuncTestResult(func.name, func.score, True)
         stf.function_test_results.append(func_result)
-        print(format_exc())
         return
 
     func_result = FuncTestResult(func.name, func.score, False)
