@@ -145,7 +145,9 @@ class ArgSetTestResult:
         inputStr = inputStr.replace("]", ")")
         strRep += "Inputs: " + inputStr + "\n"
         strRep += "Expected: " + str(self.expected) + "\n"
+        strRep += "Expected type:" + str(type(self.expected)) + '\n'
         strRep += "Actual: " + str(self.actual) + "\n"
+        strRep += "Actual type: " + str(type(self.actual)) + '\n'
         if self.is_correct:
             strRep += "passed"
         else:
