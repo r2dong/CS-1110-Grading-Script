@@ -4,12 +4,13 @@ from functools import partial
 from copy import deepcopy
 from stopit import ThreadingTimeout
 import stopit
+from tabulate import tabulate
 
 # constants
-SEPERATOR = '-' * 15
+SEPERATOR = '#' * 15
 TIMEOUT_SEC = 5
 INFINITE_LOOP_STR = 'Function call did not return in < 5sec, likely an infinite loop\n'
-FUNC_TEST_HEADER = '-' * 15 + ' function: %s, score: %d/%d' + '-' * 15 + '\n'
+FUNC_TEST_HEADER = SEPERATOR + ' function: %s, score: %d/%d' + SEPERATOR + '\n'
 RUN_TIME_ERR_STR = 'An error ocurred during excuting of your function\n'
 LOAD_TIME_ERR_STR = 'An error occured when loading your function for grading\n'
 
@@ -87,7 +88,7 @@ class FuncTestResult:
     def __init__(self, function_name, score, exc):
         self.function_name = function_name
         self.score = score
-        self.arg_set_test_results = []
+        self.arg_sets_res = []
         self.exc = exc
 
     def add_set_result(self, result):
@@ -95,7 +96,7 @@ class FuncTestResult:
         add a new ArgSetTestResult instance
         :param result: ArgSetTestResult instance to be added
         """
-        self.arg_set_test_results.append(result)
+        self.arg_sets_res.append(result)
 
     def calc_score(self):
         """
@@ -104,7 +105,7 @@ class FuncTestResult:
         :return: the deserved score
         """
         score = self.score
-        for set_result in self.arg_set_test_results:
+        for set_result in self.arg_sets_res:
             if not set_result.is_correct:
                 score = 0
                 break
@@ -117,10 +118,14 @@ class FuncTestResult:
             body = LOAD_TIME_ERR_STR
         else:
             score_recieved = self.calc_score()
-            num_tests = str(len(self.arg_set_test_results))
+            num_tests = str(len(self.arg_sets_res))
             body = num_tests + ' cases were tested\n'
         header = FUNC_TEST_HEADER % (self.function_name, score_recieved, self.score)
-        return header + body + '\n\n'.join([str(r) for r in self.arg_set_test_results])
+        res_str = []
+        for i in range(0, len(self.arg_sets_res)):
+            res_str.append(f'case {i}: {str(self.arg_sets_res[i])}')
+        # return header + body + '\n\n'.join([str(r) for r in self.arg_sets_res])
+        return header + body + '\n\n'.join(res_str)
 
 
 class ArgSetTestResult:
@@ -140,26 +145,23 @@ class ArgSetTestResult:
     
     # to return a string representation of this test result
     def __str__(self):
-        strRep = ""
-        inputStr = '(' + str(self.inputs)[1:-1] + ')'
-        strRep += "Inputs: " + inputStr + "\n"
+        strRep = "passed"
+        if not self.is_correct:
+            strRep = "failed"
+            if self.exception_str is not None:
+                strRep += "\n" + self.exception_str
+        expected_val = str(self.expected)
         if type(self.expected) == str:
-            strRep += "Expected: \"" + str(self.expected) + "\"\n"
-        else:
-            strRep += "Expected: " + str(self.expected) + "\n"
-        strRep += "Expected type: " + str(type(self.expected)) + '\n'
+            expected_val = '\"' + expected_val + '\"'
+        actual_val = str(self.actual)
         if type(self.actual) == str:
-            strRep += "Actual:   \"" + str(self.actual) + "\"\n"
-        else:
-            strRep += "Actual:   " + str(self.actual) + "\n"
-        strRep += "Actual type: " + str(type(self.actual)) + '\n'
-        if self.is_correct:
-            strRep += "passed"
-        else:
-            strRep += "failed"
-        if self.exception_str is not None:
-            strRep += "\n" + self.exception_str
-        return strRep
+            actual_val = '\"' + actual_val + '\"'
+        grid = [
+            ['', 'value returned', 'type returned'],
+            ['expected', expected_val, str(type(self.expected))],
+            ['actual', actual_val, str(type(self.actual))]
+        ]
+        return strRep + '\n' + tabulate(grid, tablefmt='grid')
 
 
 def grade_section(sol_fname, funcs, section):

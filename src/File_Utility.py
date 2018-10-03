@@ -29,7 +29,7 @@ SEE_TA = 'Note that you are assigned a score of 0 for this\n' + \
 SYNTAX_ERR = 'It appears that your file has a syntax error\n' + \
              'Be sure to click the GREEN ARROW in the upper middle before submitting\n' + \
              'and confirm you file loads without any syntax errors\n'
-HAWK_ID_COMMENT = '--------------- function: getHawkIDs, score: %d/1---------------\n'
+HAWK_ID_COMMENT = '#' * 15 + 'function: getHawkIDs, score: %d/1' + '#' * 15 + '\n'
 OH = 'Have trouble completing this assignment? Get help during the following OH/Study Group Sessions:\n' \
      'APOORV ADITYA  (also requesting all queries over grading of discussion assignments) -:\n' \
      'Email:\n' \
