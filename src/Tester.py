@@ -141,12 +141,17 @@ class ArgSetTestResult:
     # to return a string representation of this test result
     def __str__(self):
         strRep = ""
-        inputStr = str(self.inputs).replace("[", "(")
-        inputStr = inputStr.replace("]", ")")
+        inputStr = '(' + str(self.inputs)[1:-1] + ')'
         strRep += "Inputs: " + inputStr + "\n"
-        strRep += "Expected: " + str(self.expected) + "\n"
-        strRep += "Expected type:" + str(type(self.expected)) + '\n'
-        strRep += "Actual: " + str(self.actual) + "\n"
+        if type(self.expected) == str:
+            strRep += "Expected: \"" + str(self.expected) + "\"\n"
+        else:
+            strRep += "Expected: " + str(self.expected) + "\n"
+        strRep += "Expected type: " + str(type(self.expected)) + '\n'
+        if type(self.actual) == str:
+            strRep += "Actual:   \"" + str(self.actual) + "\"\n"
+        else:
+            strRep += "Actual:   " + str(self.actual) + "\n"
         strRep += "Actual type: " + str(type(self.actual)) + '\n'
         if self.is_correct:
             strRep += "passed"
