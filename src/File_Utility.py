@@ -109,15 +109,15 @@ def read_folder(folder_name):
     return section
 
 
-def parse_func_specs(fileName):
+def parse_func_specs(fn):
     """
     parse a func spec file into Function instances
-    :param fileName: path of function spec file
+    :param fn: path of function spec file
     :return: a list of Function instances
     """
     funcs = []
     is_last = False
-    with open(fileName) as file:
+    with open(fn) as file:
         reader = csv.reader(file)
         while not is_last:
             next_func, is_last = parse_one_func(reader)
@@ -205,7 +205,7 @@ class Section:
 
     # add "SIS User ID" column to output grade sheet, if missing
     @staticmethod
-    def __fix_SIS_User_ID(fn):
+    def __fix_sis_user_id(fn):
         with open(fn) as f:
             reader = csv.reader(f)
             first_row = next(reader)
@@ -247,7 +247,7 @@ class Section:
                     row += ['']
                 writer.writerow(row)
 
-        Section.__fix_SIS_User_ID(ofn)
+        Section.__fix_sis_user_id(ofn)
 
 
 class StudentFile:
