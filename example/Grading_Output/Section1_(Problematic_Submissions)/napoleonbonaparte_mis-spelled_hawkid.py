@@ -67,74 +67,140 @@ def getLength(p1,p2, myString):
 
 
 
-# --------------- function: getHawkIDs, score: 0/1---------------
+# ###############function: getHawkIDs, score: 0/1###############
 # could not find a match for the hawk id you returned in getHawkIDs function
 # maybe you did not spell it right?
 # Note that you are assigned a score of 0 for this
 # Please discuss with a TA ASAP IN PERSON to recieve credit for this assignment
 # 
-# --------------- function: getMidpoint, score: 1/1---------------
+# ############### function: getMidpoint, score: 1/1###############
 # 1 cases were tested
-# Inputs: (1, 5, 9, 13)
-# Expected: [5.0, 9.0]
-# Actual: [5.0, 9.0]
-# passed
+# case 0
+# inputs: (1, 5, 9, 13)
+# +----------+----------------+----------------+
+# | PASSED   | value returned | type returned  |
+# +----------+----------------+----------------+
+# | expected | [5.0, 9.0]     | <class 'list'> |
+# +----------+----------------+----------------+
+# | actual   | [5.0, 9.0]     | <class 'list'> |
+# +----------+----------------+----------------+
 # 
-# --------------- function: getAverage, score: 1/1---------------
+# 
+# ############### function: getAverage, score: 1/1###############
 # 3 cases were tested
-# Inputs: (1, 2, 3, 4, 5)
-# Expected: 3.0
-# Actual: 3.0
-# passed
+# case 0
+# inputs: (1, 2, 3, 4, 5)
+# +----------+----------------+-----------------+
+# | PASSED   | value returned | type returned   |
+# +----------+----------------+-----------------+
+# | expected | 3.0            | <class 'float'> |
+# +----------+----------------+-----------------+
+# | actual   | 3.0            | <class 'float'> |
+# +----------+----------------+-----------------+
 # 
-# Inputs: (2, 4, 6, 8, 10)
-# Expected: 6.0
-# Actual: 6.0
-# passed
 # 
-# Inputs: (-1, -2, 0, 2, 1)
-# Expected: 0.0
-# Actual: 0.0
-# passed
+# case 1
+# inputs: (2, 4, 6, 8, 10)
+# +----------+----------------+-----------------+
+# | PASSED   | value returned | type returned   |
+# +----------+----------------+-----------------+
+# | expected | 6.0            | <class 'float'> |
+# +----------+----------------+-----------------+
+# | actual   | 6.0            | <class 'float'> |
+# +----------+----------------+-----------------+
 # 
-# --------------- function: getAverageString, score: 1/1---------------
+# 
+# case 2
+# inputs: (-1, -2, 0, 2, 1)
+# +----------+----------------+-----------------+
+# | PASSED   | value returned | type returned   |
+# +----------+----------------+-----------------+
+# | expected | 0.0            | <class 'float'> |
+# +----------+----------------+-----------------+
+# | actual   | 0.0            | <class 'float'> |
+# +----------+----------------+-----------------+
+# 
+# 
+# ############### function: getAverageString, score: 1/1###############
 # 3 cases were tested
-# Inputs: (1, 2, 3, 4, 5)
-# Expected: The average value is 3.0.
-# Actual: The average value is 3.0.
-# passed
+# case 0
+# inputs: (1, 2, 3, 4, 5)
+# +----------+-----------------------------+---------------+
+# | PASSED   | value returned              | type returned |
+# +----------+-----------------------------+---------------+
+# | expected | "The average value is 3.0." | <class 'str'> |
+# +----------+-----------------------------+---------------+
+# | actual   | "The average value is 3.0." | <class 'str'> |
+# +----------+-----------------------------+---------------+
 # 
-# Inputs: (2, 4, 6, 8, 10)
-# Expected: The average value is 6.0.
-# Actual: The average value is 6.0.
-# passed
 # 
-# Inputs: (-1, -2, 0, 2, 1)
-# Expected: The average value is 0.0.
-# Actual: The average value is 0.0.
-# passed
+# case 1
+# inputs: (2, 4, 6, 8, 10)
+# +----------+-----------------------------+---------------+
+# | PASSED   | value returned              | type returned |
+# +----------+-----------------------------+---------------+
+# | expected | "The average value is 6.0." | <class 'str'> |
+# +----------+-----------------------------+---------------+
+# | actual   | "The average value is 6.0." | <class 'str'> |
+# +----------+-----------------------------+---------------+
 # 
-# --------------- function: getLength, score: 1/1---------------
+# 
+# case 2
+# inputs: (-1, -2, 0, 2, 1)
+# +----------+-----------------------------+---------------+
+# | PASSED   | value returned              | type returned |
+# +----------+-----------------------------+---------------+
+# | expected | "The average value is 0.0." | <class 'str'> |
+# +----------+-----------------------------+---------------+
+# | actual   | "The average value is 0.0." | <class 'str'> |
+# +----------+-----------------------------+---------------+
+# 
+# 
+# ############### function: getLength, score: 1/1###############
 # 4 cases were tested
-# Inputs: (3, 4, 'H')
-# Expected: 5.0
-# Actual: 5.0
-# passed
+# case 0
+# inputs: (3, 4, 'H')
+# +----------+----------------+-----------------+
+# | PASSED   | value returned | type returned   |
+# +----------+----------------+-----------------+
+# | expected | 5.0            | <class 'float'> |
+# +----------+----------------+-----------------+
+# | actual   | 5.0            | <class 'float'> |
+# +----------+----------------+-----------------+
 # 
-# Inputs: (5, 12, 'H')
-# Expected: 13.0
-# Actual: 13.0
-# passed
 # 
-# Inputs: (13, 5, 'S')
-# Expected: 12.0
-# Actual: 12.0
-# passed
+# case 1
+# inputs: (5, 12, 'H')
+# +----------+----------------+-----------------+
+# | PASSED   | value returned | type returned   |
+# +----------+----------------+-----------------+
+# | expected | 13.0           | <class 'float'> |
+# +----------+----------------+-----------------+
+# | actual   | 13.0           | <class 'float'> |
+# +----------+----------------+-----------------+
 # 
-# Inputs: (5, 3, 'S')
-# Expected: 4.0
-# Actual: 4.0
-# passed
+# 
+# case 2
+# inputs: (13, 5, 'S')
+# +----------+----------------+-----------------+
+# | PASSED   | value returned | type returned   |
+# +----------+----------------+-----------------+
+# | expected | 12.0           | <class 'float'> |
+# +----------+----------------+-----------------+
+# | actual   | 12.0           | <class 'float'> |
+# +----------+----------------+-----------------+
+# 
+# 
+# case 3
+# inputs: (5, 3, 'S')
+# +----------+----------------+-----------------+
+# | PASSED   | value returned | type returned   |
+# +----------+----------------+-----------------+
+# | expected | 4.0            | <class 'float'> |
+# +----------+----------------+-----------------+
+# | actual   | 4.0            | <class 'float'> |
+# +----------+----------------+-----------------+
+# 
 # 
 # 
 # 

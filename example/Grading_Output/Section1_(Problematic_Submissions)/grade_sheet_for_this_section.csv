@@ -1,9 +1,9 @@
-Student,ID,SIS Login ID,Section,Test Assignment for Section 1
-Points Possible,,,,4
-Jack Sparrow,12345,jsparrow,CS:1110:0A07 Fall17 Introduction to Computer Science,5
-Bill Gates,12346,bgates,CS:1110:0A07 Fall17 Introduction to Computer Science
-Jimmy Jacks,12347,jjacks,CS:1110:0A07 Fall17 Introduction to Computer Science,4
-Napoleon Bonaparte,12348,nbona,CS:1110:0A07 Fall17 Introduction to Computer Science
-Jim Raynor,12349,jraynor,CS:1110:0A07 Fall17 Introduction to Computer Science,4
-Donald Trump,12350,dtrump,CS:1110:0A07 Fall17 Introduction to Computer Science
-John Appleseed,12351,japple,CS:1110:0A07 Fall17 Introduction to Computer Science,5
+Student,ID,SIS User ID,SIS Login ID,Section,Test Assignment for Section 1
+Points Possible,,,,,5
+Jack Sparrow,12345,,jsparrow,CS:1110:0A07 Fall17 Introduction to Computer Science,5
+Bill Gates,12346,,bgates,CS:1110:0A07 Fall17 Introduction to Computer Science,
+Jimmy Jacks,12347,,jjacks,CS:1110:0A07 Fall17 Introduction to Computer Science,4
+Napoleon Bonaparte,12348,,nbona,CS:1110:0A07 Fall17 Introduction to Computer Science,
+Jim Raynor,12349,,jraynor,CS:1110:0A07 Fall17 Introduction to Computer Science,4
+Donald Trump,12350,,dtrump,CS:1110:0A07 Fall17 Introduction to Computer Science,
+John Appleseed,12351,,japple,CS:1110:0A07 Fall17 Introduction to Computer Science,5
