@@ -123,7 +123,7 @@ class FuncTestResult:
         header = FUNC_TEST_HEADER % (self.function_name, score_recieved, self.score)
         res_str = []
         for i in range(0, len(self.arg_sets_res)):
-            res_str.append(f'case {i}: {str(self.arg_sets_res[i])}')
+            res_str.append(f'case {i}\n{str(self.arg_sets_res[i])}')
         # return header + body + '\n\n'.join([str(r) for r in self.arg_sets_res])
         return header + body + '\n\n'.join(res_str)
 
@@ -145,23 +145,25 @@ class ArgSetTestResult:
     
     # to return a string representation of this test result
     def __str__(self):
-        strRep = "passed"
-        if not self.is_correct:
-            strRep = "failed"
-            if self.exception_str is not None:
-                strRep += "\n" + self.exception_str
         expected_val = str(self.expected)
         if type(self.expected) == str:
             expected_val = '\"' + expected_val + '\"'
         actual_val = str(self.actual)
         if type(self.actual) == str:
             actual_val = '\"' + actual_val + '\"'
+        res = "PASSED"
+        if not self.is_correct:
+            res = "FAILED"
         grid = [
-            ['', 'value returned', 'type returned'],
+            [res, 'value returned', 'type returned'],
             ['expected', expected_val, str(type(self.expected))],
             ['actual', actual_val, str(type(self.actual))]
         ]
-        return strRep + '\n' + tabulate(grid, tablefmt='grid')
+        in_str = f'inputs: ({str(self.inputs)[1:-1]})\n'
+        return_str = in_str + tabulate(grid, tablefmt='grid') + '\n'
+        if self.exception_str is not None:
+            return_str += self.exception_str
+        return return_str
 
 
 def grade_section(sol_fname, funcs, section):
