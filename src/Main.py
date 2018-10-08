@@ -1,6 +1,6 @@
 """ entry point of grading script """
 
-from src import File_Utility
+import File_Utility
 import argparse
 import sys
 from os.path import dirname
