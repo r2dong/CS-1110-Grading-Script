@@ -10,8 +10,8 @@ from os.path import dirname
 from shutil import copy
 from os.path import basename
 from os import makedirs
-from src.Tester import test_func
-from src.Tester import Func
+from Tester import test_func
+from Tester import Func
 from ast import literal_eval
 
 # constants
