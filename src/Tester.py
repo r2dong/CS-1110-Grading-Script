@@ -104,12 +104,12 @@ class FuncTestResult:
         all or nothing
         :return: the deserved score
         """
-        score = self.score
+        if self.exc:
+            return 0
         for set_result in self.arg_sets_res:
             if not set_result.is_correct:
-                score = 0
-                break
-        return score
+                return 0
+        return self.score
 
     def __str__(self):
 
