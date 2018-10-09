@@ -124,7 +124,6 @@ class FuncTestResult:
         res_str = []
         for i in range(0, len(self.arg_sets_res)):
             res_str.append(f'case {i}\n{str(self.arg_sets_res[i])}')
-        # return header + body + '\n\n'.join([str(r) for r in self.arg_sets_res])
         return header + body + '\n\n'.join(res_str)
 
 
@@ -132,10 +131,6 @@ class ArgSetTestResult:
     """
     Testing result of a single set of input arguments
     """
-    # constructor
-    # inputs: inputs used in this test
-    # expected: expected results
-    # actual: actual results
     def __init__(self, inputs, expected, actual, exception_str):
         self.inputs = inputs
         self.expected = expected
@@ -154,6 +149,9 @@ class ArgSetTestResult:
         res = "PASSED"
         if not self.is_correct:
             res = "FAILED"
+        print('writing output')
+        print(f'expected val: {expected_val}')
+        print(f'actual val: {actual_val}')
         grid = [
             [res, 'value returned', 'type returned'],
             ['expected', expected_val, str(type(self.expected))],
