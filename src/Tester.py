@@ -149,9 +149,6 @@ class ArgSetTestResult:
         res = "PASSED"
         if not self.is_correct:
             res = "FAILED"
-        print('writing output')
-        print(f'expected val: {expected_val}')
-        print(f'actual val: {actual_val}')
         grid = [
             [res, 'value returned', 'type returned'],
             ['expected', expected_val, str(type(self.expected))],
