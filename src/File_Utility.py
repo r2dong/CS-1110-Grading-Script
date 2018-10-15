@@ -25,7 +25,8 @@ HAWK_ID_EXC_STR = 'something wrong happend when reading your getHawkIDs function
 HAWK_ID_NON_EXIST_STR = 'could not find a match for the hawk id you returned in getHawkIDs function\n' + \
                         'maybe you did not spell it right?\n'
 SEE_TA = 'Note that you are assigned a score of 0 for this\n' + \
-         'Please discuss with a TA ASAP IN PERSON to recieve credit for this assignment\n'
+         'If this assignment was posted before Lab Exam 1, ' + \
+         'please discuss with a TA ASAP IN PERSON to recieve credit for this assignment\n'
 SYNTAX_ERR = 'It appears that your file has a syntax error\n' + \
              'Be sure to click the GREEN ARROW in the upper middle before submitting\n' + \
              'and confirm you file loads without any syntax errors\n'
