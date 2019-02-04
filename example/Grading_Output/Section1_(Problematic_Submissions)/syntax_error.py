@@ -72,5 +72,5 @@ def getLength(p1,p2, myString):
 # Be sure to click the GREEN ARROW in the upper middle before submitting
 # and confirm you file loads without any syntax errors
 # Note that you are assigned a score of 0 for this
-# Please discuss with a TA ASAP IN PERSON to recieve credit for this assignment
+# If this assignment was posted before Lab Exam 1, please discuss with a TA ASAP IN PERSON to recieve credit for this assignment
 # 

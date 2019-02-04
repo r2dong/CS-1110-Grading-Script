@@ -1,7 +1,7 @@
 #Problem 1: Write a function that takes no arguments and returns a list containing your
 #HawkID.
-def getHawkIDs():
-    return ["nbona, but I am so handsome and smart"]
+def GetHawkIDs():
+    return ["bgates"]
 
 #DA 2 get cordinates of 2 points and find the midpoint
 def getMidpoint(x1, y1, x2, y2):
@@ -68,10 +68,10 @@ def getLength(p1,p2, myString):
 
 
 # ###############function: getHawkIDs, score: 0/1###############
-# could not find a match for the hawk id you returned in getHawkIDs function
-# maybe you did not spell it right?
+# something wrong happend when reading your getHawkIDs function
+# maybe there is a typo in function name?
 # Note that you are assigned a score of 0 for this
-# Please discuss with a TA ASAP IN PERSON to recieve credit for this assignment
+# If this assignment was posted before Lab Exam 1, please discuss with a TA ASAP IN PERSON to recieve credit for this assignment
 # 
 # ############### function: getMidpoint, score: 1/1###############
 # 1 cases were tested
