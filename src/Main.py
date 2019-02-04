@@ -28,27 +28,27 @@ def main():
     parser.add_argument('-s', dest='sol', type=str, required=True, help=S_HELP)
     parser.add_argument('-f', dest='spec', type=str, required=True, help=F_HELP)
     parser.add_argument('-o', dest='out_dir', type=str, required=True, help=O_HELP)
-    cmdArgs = parser.parse_args()
+    args = parser.parse_args()
 
-    if len(cmdArgs.hwids) != 1 and len(cmdArgs.hwids) != len(cmdArgs.paths):
+    if len(args.hwids) != 1 and len(args.hwids) != len(args.paths):
         raise Exception('invalid section folder and hwid input')
-    if len(cmdArgs.hwids) == 1:
-        the_id = cmdArgs.hwids[0]
-        cmdArgs.hwids = [the_id for _ in range(0, len(cmdArgs.paths))]
+    if len(args.hwids) == 1:
+        the_id = args.hwids[0]
+        args.hwids = [the_id for _ in range(0, len(args.paths))]
 
-    funcs = File_Utility.parse_func_specs(cmdArgs.spec)  # parse func specs
+    funcs = File_Utility.parse_func_specs(args.spec)  # parse func specs
 
     # modify sys path to include relevant files
-    for path in cmdArgs.paths:
+    for path in args.paths:
         sys.path.append(path)
-    sys.path.append(dirname(cmdArgs.sol))
-    cmdArgs.sol = basename(cmdArgs.sol)[:-3]
+    sys.path.append(dirname(args.sol))
+    args.sol = basename(args.sol)[:-3]
 
-    for path, hwid in zip(cmdArgs.paths, cmdArgs.hwids):
+    for path, hwid in zip(args.paths, args.hwids):
         section = File_Utility.read_folder(path)
-        section.grade_section(cmdArgs.sol, funcs)
-        section.write_test_results(cmdArgs.out_dir)
-        section.write_grade_sheet(cmdArgs.out_dir, hwid)
+        section.grade_section(args.sol, funcs)
+        section.write_test_results(args.out_dir)
+        section.write_grade_sheet(args.out_dir, hwid)
 
     print('Grading Finished')
 

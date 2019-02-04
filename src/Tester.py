@@ -49,13 +49,13 @@ def test_one_arg_set(arg_set, stf_func, sol_func):
         sol_func = partial(sol_func, deepcopy(arg))
     is_timeout, return_val, exc_str = run_with_timeout(stf_func)
     answer_key = sol_func()
-    ArgSet_partial = partial(ArgSetTestResult, arg_set, answer_key)
+    arg_set_partial = partial(ArgSetTestResult, arg_set, answer_key)
     if is_timeout:
-        return ArgSet_partial(None, INFINITE_LOOP_STR)
+        return arg_set_partial(None, INFINITE_LOOP_STR)
     elif exc_str:
-        return ArgSet_partial(None, exc_str)
+        return arg_set_partial(None, exc_str)
     else:
-        return ArgSet_partial(return_val, None)
+        return arg_set_partial(return_val, None)
 
 
 def test_func(func, stf, sol_name):
